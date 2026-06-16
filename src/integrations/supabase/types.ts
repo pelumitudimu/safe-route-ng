@@ -316,6 +316,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      lookup_user_by_email: { Args: { _email: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
