@@ -211,8 +211,6 @@ function SafeRoutePage() {
           </div>
         </Card>
       </div>
-      {/* keep hotspots/overall referenced to satisfy planning intent */}
-      <span className="hidden">{hotspots.length}{overall?.score}</span>
     </AppLayout>
   );
 }
