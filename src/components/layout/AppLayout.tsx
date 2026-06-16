@@ -7,6 +7,7 @@ import {
   Route as RouteIcon,
   Bell,
   User,
+  Users,
   Siren,
   LogOut,
 } from "lucide-react";
@@ -30,6 +31,7 @@ const NAV = [
   { to: "/map", label: "Live Map", icon: MapIcon },
   { to: "/report", label: "Report", icon: Flag },
   { to: "/safe-route", label: "Safe Route", icon: RouteIcon },
+  { to: "/circle", label: "Family & Friends", icon: Users },
   { to: "/alerts", label: "Alerts", icon: Bell },
   { to: "/profile", label: "Profile", icon: User },
 ] as const;
@@ -38,7 +40,7 @@ const MOBILE_NAV = [
   { to: "/dashboard", label: "Home", icon: LayoutDashboard },
   { to: "/map", label: "Map", icon: MapIcon },
   { to: "/report", label: "Report", icon: Flag },
-  { to: "/alerts", label: "Alerts", icon: Bell },
+  { to: "/circle", label: "Circle", icon: Users },
   { to: "/profile", label: "Profile", icon: User },
 ] as const;
 

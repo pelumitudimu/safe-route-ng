@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Siren, MapPin, Phone, ShieldX, History } from "lucide-react";
+import { Siren, MapPin, Phone, ShieldX, History, Users, ArrowRight } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -198,6 +198,16 @@ function SosPage() {
               </a>
             ))}
           </div>
+          <Link
+            to="/circle"
+            className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background/50 p-3 text-sm transition-colors hover:border-primary/50"
+          >
+            <span className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              Your circle is alerted automatically — manage family & friends
+            </span>
+            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
         </Card>
 
         <Card className="space-y-3 border-border bg-card p-5 shadow-card">

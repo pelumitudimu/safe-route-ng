@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      circle_connections: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      emergency_contacts: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          notify_on_sos: boolean
+          phone: string
+          relationship: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          notify_on_sos?: boolean
+          phone: string
+          relationship?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          notify_on_sos?: boolean
+          phone?: string
+          relationship?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       incident_verifications: {
         Row: {
           created_at: string
@@ -198,6 +258,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_locations: {
+        Row: {
+          latitude: number | null
+          longitude: number | null
+          sharing_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          latitude?: number | null
+          longitude?: number | null
+          sharing_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          latitude?: number | null
+          longitude?: number | null
+          sharing_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -224,6 +308,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      are_in_circle: { Args: { _a: string; _b: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -231,6 +316,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      lookup_user_by_email: { Args: { _email: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
