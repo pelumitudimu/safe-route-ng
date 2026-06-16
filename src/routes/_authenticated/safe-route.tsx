@@ -106,14 +106,6 @@ function SafeRoutePage() {
   if (from) markers.push({ lat: from.lat, lon: from.lon, label: "A", color: "#34d399" });
   if (to) markers.push({ lat: to.lat, lon: to.lon, label: "B", color: "#ef4444" });
 
-  const hotspots = result
-    ? result.samples
-        .filter((s) => s.score >= 45)
-        .map((s) => s.point)
-    : [];
-
-  const overall = result ? { score: result.avgScore } : null;
-
   return (
     <AppLayout title="Safe Route">
       <div className="mx-auto grid max-w-5xl gap-4 animate-float-up lg:grid-cols-[380px_1fr]">
