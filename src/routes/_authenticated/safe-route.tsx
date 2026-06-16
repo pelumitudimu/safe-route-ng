@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Navigation, MapPin, Flag, Search, ShieldCheck } from "lucide-react";
+import { MapPin, Flag, Search, ShieldCheck } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -226,4 +226,3 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
-void Navigation;
