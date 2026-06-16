@@ -86,7 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Avoid dangerous areas in Nigeria. Report incidents, view a live safety map, get danger alerts, find safer routes and use the SOS panic button.",
       },
       { name: "author", content: "SafeRoute Nigeria" },
-      { property: "og:title", content: "SafeRoute Nigeria — Real-time Safety Map & Incident Reporting" },
+      { property: "og:title", content: "SafeRoute Nigeria — Stay Safe, Stay Informed" },
       {
         property: "og:description",
         content:
@@ -94,12 +94,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "SafeRoute Nigeria — Real-time Safety Map & Incident Reporting" },
-      { name: "description", content: "\"Know your safest route before you move\"" },
-      { property: "og:description", content: "\"Know your safest route before you move\"" },
-      { name: "twitter:description", content: "\"Know your safest route before you move\"" },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/JrtR2pjnlFSg1phTbW1iNjHilTi2/social-images/social-1781627151359-ChatGPT_Image_Jun_16,_2026,_05_23_28_PM.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/JrtR2pjnlFSg1phTbW1iNjHilTi2/social-images/social-1781627151359-ChatGPT_Image_Jun_16,_2026,_05_23_28_PM.webp" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
