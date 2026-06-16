@@ -198,6 +198,16 @@ function SosPage() {
               </a>
             ))}
           </div>
+          <Link
+            to="/circle"
+            className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background/50 p-3 text-sm transition-colors hover:border-primary/50"
+          >
+            <span className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              Your circle is alerted automatically — manage family & friends
+            </span>
+            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
         </Card>
 
         <Card className="space-y-3 border-border bg-card p-5 shadow-card">
