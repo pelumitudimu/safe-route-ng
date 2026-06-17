@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Bell, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ interface Notification {
 export function NotificationBell() {
   const { user } = useAuth();
   const [items, setItems] = useState<Notification[]>([]);
+  const seenIds = useRef<Set<string> | null>(null);
 
   const load = async () => {
     if (!user) return;
@@ -33,27 +34,28 @@ export function NotificationBell() {
       .select("id, title, body, type, read, created_at")
       .order("created_at", { ascending: false })
       .limit(20);
-    setItems(data ?? []);
+    const next = data ?? [];
+    // On first load, prime the seen set without toasting existing notifications.
+    if (seenIds.current === null) {
+      seenIds.current = new Set(next.map((n) => n.id));
+    } else {
+      for (const n of next) {
+        if (!seenIds.current.has(n.id)) {
+          seenIds.current.add(n.id);
+          toast(n.title, { description: n.body ?? undefined });
+        }
+      }
+    }
+    setItems(next);
   };
 
   useEffect(() => {
+    seenIds.current = null;
     load();
     if (!user) return;
-    const channel = supabase
-      .channel("notif-bell")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-        (payload) => {
-          const n = payload.new as Notification;
-          setItems((prev) => [n, ...prev]);
-          toast(n.title, { description: n.body ?? undefined });
-        },
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    // Poll for new notifications (realtime is disabled on this table for privacy).
+    const interval = setInterval(load, 20_000);
+    return () => clearInterval(interval);
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const unread = items.filter((i) => !i.read).length;
