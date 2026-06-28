@@ -51,7 +51,7 @@ function AuthPage() {
     if (!e.success) return toast.error(e.error.issues[0].message);
     if (!p.success) return toast.error(p.error.issues[0].message);
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: e.data,
       password: p.data,
       options: {
@@ -61,6 +61,13 @@ function AuthPage() {
     });
     setLoading(false);
     if (error) return toast.error(error.message);
+    // When email confirmation is disabled, sign-up returns a live session and
+    // the browser's password manager can save the new credentials immediately.
+    if (data.session) {
+      toast.success("Account created! You're signed in.");
+      navigate({ to: "/dashboard" });
+      return;
+    }
     toast.success("Account created! Check your email to confirm, then sign in.");
   };
 
@@ -86,26 +93,86 @@ function AuthPage() {
               <TabsTrigger value="signup">Sign up</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="signin" className="mt-5 space-y-4">
-              <Field label="Email" value={email} onChange={setEmail} type="email" placeholder="you@example.com" />
-              <Field label="Password" value={password} onChange={setPassword} type="password" placeholder="••••••••" />
-              <div className="text-right">
-                <Link to="/reset-password" className="text-xs text-primary hover:underline">
-                  Forgot password?
-                </Link>
-              </div>
-              <Button onClick={signIn} disabled={loading} className="w-full bg-gradient-primary text-primary-foreground">
-                {loading ? "Signing in..." : "Sign in"}
-              </Button>
+            <TabsContent value="signin" className="mt-5">
+              <form
+                className="space-y-4"
+                onSubmit={(ev) => {
+                  ev.preventDefault();
+                  if (!loading) signIn();
+                }}
+              >
+                <Field
+                  id="signin-email"
+                  name="email"
+                  label="Email"
+                  value={email}
+                  onChange={setEmail}
+                  type="email"
+                  autoComplete="username"
+                  placeholder="you@example.com"
+                />
+                <Field
+                  id="signin-password"
+                  name="password"
+                  label="Password"
+                  value={password}
+                  onChange={setPassword}
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                />
+                <div className="text-right">
+                  <Link to="/reset-password" className="text-xs text-primary hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
+                <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground">
+                  {loading ? "Signing in..." : "Sign in"}
+                </Button>
+              </form>
             </TabsContent>
 
-            <TabsContent value="signup" className="mt-5 space-y-4">
-              <Field label="Display name" value={displayName} onChange={setDisplayName} placeholder="Your name" />
-              <Field label="Email" value={email} onChange={setEmail} type="email" placeholder="you@example.com" />
-              <Field label="Password" value={password} onChange={setPassword} type="password" placeholder="At least 6 characters" />
-              <Button onClick={signUp} disabled={loading} className="w-full bg-gradient-primary text-primary-foreground">
-                {loading ? "Creating..." : "Create account"}
-              </Button>
+            <TabsContent value="signup" className="mt-5">
+              <form
+                className="space-y-4"
+                onSubmit={(ev) => {
+                  ev.preventDefault();
+                  if (!loading) signUp();
+                }}
+              >
+                <Field
+                  id="signup-name"
+                  name="name"
+                  label="Display name"
+                  value={displayName}
+                  onChange={setDisplayName}
+                  autoComplete="name"
+                  placeholder="Your name"
+                />
+                <Field
+                  id="signup-email"
+                  name="email"
+                  label="Email"
+                  value={email}
+                  onChange={setEmail}
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                />
+                <Field
+                  id="signup-password"
+                  name="new-password"
+                  label="Password"
+                  value={password}
+                  onChange={setPassword}
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="At least 6 characters"
+                />
+                <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground">
+                  {loading ? "Creating..." : "Create account"}
+                </Button>
+              </form>
             </TabsContent>
           </Tabs>
 
@@ -125,22 +192,36 @@ function AuthPage() {
 }
 
 function Field({
+  id,
+  name,
   label,
   value,
   onChange,
   type = "text",
   placeholder,
+  autoComplete,
 }: {
+  id?: string;
+  name?: string;
   label: string;
   value: string;
   onChange: (v: string) => void;
   type?: string;
   placeholder?: string;
+  autoComplete?: string;
 }) {
   return (
     <div className="space-y-1.5">
-      <Label>{label}</Label>
-      <Input type={type} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        name={name}
+        type={type}
+        value={value}
+        autoComplete={autoComplete}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </div>
   );
 }
