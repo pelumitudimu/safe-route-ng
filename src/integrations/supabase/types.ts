@@ -118,7 +118,7 @@ export type Database = {
           latitude: number
           longitude: number
           photo_url: string | null
-          reporter_id: string
+          reporter_id: string | null
           severity: Database["public"]["Enums"]["incident_severity"]
           status: Database["public"]["Enums"]["incident_status"]
           title: string
@@ -135,7 +135,7 @@ export type Database = {
           latitude: number
           longitude: number
           photo_url?: string | null
-          reporter_id: string
+          reporter_id?: string | null
           severity?: Database["public"]["Enums"]["incident_severity"]
           status?: Database["public"]["Enums"]["incident_status"]
           title: string
@@ -152,7 +152,7 @@ export type Database = {
           latitude?: number
           longitude?: number
           photo_url?: string | null
-          reporter_id?: string
+          reporter_id?: string | null
           severity?: Database["public"]["Enums"]["incident_severity"]
           status?: Database["public"]["Enums"]["incident_status"]
           title?: string

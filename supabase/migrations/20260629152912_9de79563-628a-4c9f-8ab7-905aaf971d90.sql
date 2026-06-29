@@ -1,0 +1,1 @@
+ALTER TABLE public.incidents ALTER COLUMN reporter_id DROP NOT NULL;
