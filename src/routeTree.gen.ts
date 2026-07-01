@@ -21,6 +21,7 @@ import { Route as AuthenticatedMapRouteImport } from './routes/_authenticated/ma
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCircleRouteImport } from './routes/_authenticated/circle'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
+import { Route as ApiPublicHooksIngestIncidentsRouteImport } from './routes/api/public/hooks/ingest-incidents'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -81,6 +82,12 @@ const AuthenticatedAlertsRoute = AuthenticatedAlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicHooksIngestIncidentsRoute =
+  ApiPublicHooksIngestIncidentsRouteImport.update({
+    id: '/api/public/hooks/ingest-incidents',
+    path: '/api/public/hooks/ingest-incidents',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/report': typeof AuthenticatedReportRoute
   '/safe-route': typeof AuthenticatedSafeRouteRoute
   '/sos': typeof AuthenticatedSosRoute
+  '/api/public/hooks/ingest-incidents': typeof ApiPublicHooksIngestIncidentsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -107,6 +115,7 @@ export interface FileRoutesByTo {
   '/report': typeof AuthenticatedReportRoute
   '/safe-route': typeof AuthenticatedSafeRouteRoute
   '/sos': typeof AuthenticatedSosRoute
+  '/api/public/hooks/ingest-incidents': typeof ApiPublicHooksIngestIncidentsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -122,6 +131,7 @@ export interface FileRoutesById {
   '/_authenticated/report': typeof AuthenticatedReportRoute
   '/_authenticated/safe-route': typeof AuthenticatedSafeRouteRoute
   '/_authenticated/sos': typeof AuthenticatedSosRoute
+  '/api/public/hooks/ingest-incidents': typeof ApiPublicHooksIngestIncidentsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/safe-route'
     | '/sos'
+    | '/api/public/hooks/ingest-incidents'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/safe-route'
     | '/sos'
+    | '/api/public/hooks/ingest-incidents'
   id:
     | '__root__'
     | '/'
@@ -164,6 +176,7 @@ export interface FileRouteTypes {
     | '/_authenticated/report'
     | '/_authenticated/safe-route'
     | '/_authenticated/sos'
+    | '/api/public/hooks/ingest-incidents'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -171,6 +184,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicHooksIngestIncidentsRoute: typeof ApiPublicHooksIngestIncidentsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -259,6 +273,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAlertsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/hooks/ingest-incidents': {
+      id: '/api/public/hooks/ingest-incidents'
+      path: '/api/public/hooks/ingest-incidents'
+      fullPath: '/api/public/hooks/ingest-incidents'
+      preLoaderRoute: typeof ApiPublicHooksIngestIncidentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -292,6 +313,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicHooksIngestIncidentsRoute: ApiPublicHooksIngestIncidentsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
