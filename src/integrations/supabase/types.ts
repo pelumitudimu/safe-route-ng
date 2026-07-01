@@ -120,6 +120,7 @@ export type Database = {
           photo_url: string | null
           reporter_id: string | null
           severity: Database["public"]["Enums"]["incident_severity"]
+          source_url: string | null
           status: Database["public"]["Enums"]["incident_status"]
           title: string
           updated_at: string
@@ -137,6 +138,7 @@ export type Database = {
           photo_url?: string | null
           reporter_id?: string | null
           severity?: Database["public"]["Enums"]["incident_severity"]
+          source_url?: string | null
           status?: Database["public"]["Enums"]["incident_status"]
           title: string
           updated_at?: string
@@ -154,6 +156,7 @@ export type Database = {
           photo_url?: string | null
           reporter_id?: string | null
           severity?: Database["public"]["Enums"]["incident_severity"]
+          source_url?: string | null
           status?: Database["public"]["Enums"]["incident_status"]
           title?: string
           updated_at?: string
