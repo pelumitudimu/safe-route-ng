@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { reverseGeocode, timeAgo } from "@/lib/safety";
+import { timeAgo } from "@/lib/safety";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/sos")({
