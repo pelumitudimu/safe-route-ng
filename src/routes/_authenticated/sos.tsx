@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { reverseGeocode, timeAgo } from "@/lib/safety";
+import { timeAgo } from "@/lib/safety";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/sos")({
@@ -66,17 +66,16 @@ function SosPage() {
     try {
       let lat: number | null = null;
       let lon: number | null = null;
-      let address = "";
       try {
         const pos = await new Promise<GeolocationPosition>((res, rej) =>
           navigator.geolocation.getCurrentPosition(res, rej, { timeout: 8000 }),
         );
         lat = pos.coords.latitude;
         lon = pos.coords.longitude;
-        address = await reverseGeocode(lat, lon);
       } catch {
         // location optional
       }
+
       const { error } = await supabase.from("sos_alerts").insert({
         user_id: user.id,
         message: message.trim() || null,
@@ -85,14 +84,7 @@ function SosPage() {
         status: "active",
       });
       if (error) throw error;
-      await supabase.from("notifications").insert({
-        user_id: user.id,
-        title: "🚨 SOS alert sent",
-        body: address
-          ? `Your emergency alert was broadcast from ${address}.`
-          : "Your emergency alert was broadcast.",
-        type: "danger",
-      });
+
       toast.success("SOS alert sent. Stay safe — help is being notified.");
       setMessage("");
       qc.invalidateQueries({ queryKey: ["sos_alerts"] });

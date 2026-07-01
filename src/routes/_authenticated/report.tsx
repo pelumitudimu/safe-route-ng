@@ -76,12 +76,7 @@ function ReportPage() {
         photo_url,
       });
       if (error) throw error;
-      await supabase.from("notifications").insert({
-        user_id: user.id,
-        title: "Report submitted",
-        body: `Your "${t.data}" report is now live on the map.`,
-        type: "success",
-      });
+
       toast.success("Incident reported. Thank you for keeping people safe!");
       navigate({ to: "/map" });
     } catch (e) {
