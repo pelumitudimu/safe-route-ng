@@ -66,17 +66,16 @@ function SosPage() {
     try {
       let lat: number | null = null;
       let lon: number | null = null;
-      let address = "";
       try {
         const pos = await new Promise<GeolocationPosition>((res, rej) =>
           navigator.geolocation.getCurrentPosition(res, rej, { timeout: 8000 }),
         );
         lat = pos.coords.latitude;
         lon = pos.coords.longitude;
-        address = await reverseGeocode(lat, lon);
       } catch {
         // location optional
       }
+
       const { error } = await supabase.from("sos_alerts").insert({
         user_id: user.id,
         message: message.trim() || null,
