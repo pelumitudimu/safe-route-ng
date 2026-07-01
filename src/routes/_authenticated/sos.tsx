@@ -85,14 +85,7 @@ function SosPage() {
         status: "active",
       });
       if (error) throw error;
-      await supabase.from("notifications").insert({
-        user_id: user.id,
-        title: "🚨 SOS alert sent",
-        body: address
-          ? `Your emergency alert was broadcast from ${address}.`
-          : "Your emergency alert was broadcast.",
-        type: "danger",
-      });
+
       toast.success("SOS alert sent. Stay safe — help is being notified.");
       setMessage("");
       qc.invalidateQueries({ queryKey: ["sos_alerts"] });
