@@ -13,6 +13,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedSosRouteImport } from './routes/_authenticated/sos'
 import { Route as AuthenticatedSafeRouteRouteImport } from './routes/_authenticated/safe-route'
 import { Route as AuthenticatedReportRouteImport } from './routes/_authenticated/report'
@@ -20,6 +21,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMapRouteImport } from './routes/_authenticated/map'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCircleRouteImport } from './routes/_authenticated/circle'
+import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
 import { Route as ApiPublicHooksIngestIncidentsRouteImport } from './routes/api/public/hooks/ingest-incidents'
 
@@ -40,6 +42,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSosRoute = AuthenticatedSosRouteImport.update({
@@ -77,6 +84,11 @@ const AuthenticatedCircleRoute = AuthenticatedCircleRouteImport.update({
   path: '/circle',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAlertsRoute = AuthenticatedAlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
@@ -94,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/alerts': typeof AuthenticatedAlertsRoute
+  '/assistant': typeof AuthenticatedAssistantRoute
   '/circle': typeof AuthenticatedCircleRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/map': typeof AuthenticatedMapRoute
@@ -101,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/report': typeof AuthenticatedReportRoute
   '/safe-route': typeof AuthenticatedSafeRouteRoute
   '/sos': typeof AuthenticatedSosRoute
+  '/api/chat': typeof ApiChatRoute
   '/api/public/hooks/ingest-incidents': typeof ApiPublicHooksIngestIncidentsRoute
 }
 export interface FileRoutesByTo {
@@ -108,6 +122,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/alerts': typeof AuthenticatedAlertsRoute
+  '/assistant': typeof AuthenticatedAssistantRoute
   '/circle': typeof AuthenticatedCircleRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/map': typeof AuthenticatedMapRoute
@@ -115,6 +130,7 @@ export interface FileRoutesByTo {
   '/report': typeof AuthenticatedReportRoute
   '/safe-route': typeof AuthenticatedSafeRouteRoute
   '/sos': typeof AuthenticatedSosRoute
+  '/api/chat': typeof ApiChatRoute
   '/api/public/hooks/ingest-incidents': typeof ApiPublicHooksIngestIncidentsRoute
 }
 export interface FileRoutesById {
@@ -124,6 +140,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
+  '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/circle': typeof AuthenticatedCircleRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/map': typeof AuthenticatedMapRoute
@@ -131,6 +148,7 @@ export interface FileRoutesById {
   '/_authenticated/report': typeof AuthenticatedReportRoute
   '/_authenticated/safe-route': typeof AuthenticatedSafeRouteRoute
   '/_authenticated/sos': typeof AuthenticatedSosRoute
+  '/api/chat': typeof ApiChatRoute
   '/api/public/hooks/ingest-incidents': typeof ApiPublicHooksIngestIncidentsRoute
 }
 export interface FileRouteTypes {
@@ -140,6 +158,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/alerts'
+    | '/assistant'
     | '/circle'
     | '/dashboard'
     | '/map'
@@ -147,6 +166,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/safe-route'
     | '/sos'
+    | '/api/chat'
     | '/api/public/hooks/ingest-incidents'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -154,6 +174,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/alerts'
+    | '/assistant'
     | '/circle'
     | '/dashboard'
     | '/map'
@@ -161,6 +182,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/safe-route'
     | '/sos'
+    | '/api/chat'
     | '/api/public/hooks/ingest-incidents'
   id:
     | '__root__'
@@ -169,6 +191,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/alerts'
+    | '/_authenticated/assistant'
     | '/_authenticated/circle'
     | '/_authenticated/dashboard'
     | '/_authenticated/map'
@@ -176,6 +199,7 @@ export interface FileRouteTypes {
     | '/_authenticated/report'
     | '/_authenticated/safe-route'
     | '/_authenticated/sos'
+    | '/api/chat'
     | '/api/public/hooks/ingest-incidents'
   fileRoutesById: FileRoutesById
 }
@@ -184,6 +208,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiChatRoute: typeof ApiChatRoute
   ApiPublicHooksIngestIncidentsRoute: typeof ApiPublicHooksIngestIncidentsRoute
 }
 
@@ -215,6 +240,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/sos': {
@@ -266,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCircleRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/assistant': {
+      id: '/_authenticated/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AuthenticatedAssistantRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/alerts': {
       id: '/_authenticated/alerts'
       path: '/alerts'
@@ -285,6 +324,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
+  AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedCircleRoute: typeof AuthenticatedCircleRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedMapRoute: typeof AuthenticatedMapRoute
@@ -296,6 +336,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
+  AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedCircleRoute: AuthenticatedCircleRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedMapRoute: AuthenticatedMapRoute,
@@ -313,8 +354,19 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiChatRoute: ApiChatRoute,
   ApiPublicHooksIngestIncidentsRoute: ApiPublicHooksIngestIncidentsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
