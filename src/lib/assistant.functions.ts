@@ -33,7 +33,7 @@ export const getAssistantMessages = createServerFn({ method: "GET" })
     return (data as StoredRow[]).map((row) => ({
       id: row.id,
       role: row.role,
-      parts: Array.isArray(row.parts) ? (row.parts as Array<Record<string, unknown>>) : [],
+      parts: Array.isArray(row.parts) ? (row.parts as Json[]) : [],
     }));
   });
 
