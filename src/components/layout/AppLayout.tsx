@@ -9,6 +9,7 @@ import {
   User,
   Users,
   Siren,
+  Bot,
   LogOut,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
