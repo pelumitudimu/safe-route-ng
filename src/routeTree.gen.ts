@@ -13,6 +13,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedSosRouteImport } from './routes/_authenticated/sos'
 import { Route as AuthenticatedSafeRouteRouteImport } from './routes/_authenticated/safe-route'
 import { Route as AuthenticatedReportRouteImport } from './routes/_authenticated/report'
@@ -40,6 +41,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSosRoute = AuthenticatedSosRouteImport.update({
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/report': typeof AuthenticatedReportRoute
   '/safe-route': typeof AuthenticatedSafeRouteRoute
   '/sos': typeof AuthenticatedSosRoute
+  '/api/chat': typeof ApiChatRoute
   '/api/public/hooks/ingest-incidents': typeof ApiPublicHooksIngestIncidentsRoute
 }
 export interface FileRoutesByTo {
@@ -115,6 +122,7 @@ export interface FileRoutesByTo {
   '/report': typeof AuthenticatedReportRoute
   '/safe-route': typeof AuthenticatedSafeRouteRoute
   '/sos': typeof AuthenticatedSosRoute
+  '/api/chat': typeof ApiChatRoute
   '/api/public/hooks/ingest-incidents': typeof ApiPublicHooksIngestIncidentsRoute
 }
 export interface FileRoutesById {
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   '/_authenticated/report': typeof AuthenticatedReportRoute
   '/_authenticated/safe-route': typeof AuthenticatedSafeRouteRoute
   '/_authenticated/sos': typeof AuthenticatedSosRoute
+  '/api/chat': typeof ApiChatRoute
   '/api/public/hooks/ingest-incidents': typeof ApiPublicHooksIngestIncidentsRoute
 }
 export interface FileRouteTypes {
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/safe-route'
     | '/sos'
+    | '/api/chat'
     | '/api/public/hooks/ingest-incidents'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/safe-route'
     | '/sos'
+    | '/api/chat'
     | '/api/public/hooks/ingest-incidents'
   id:
     | '__root__'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/_authenticated/report'
     | '/_authenticated/safe-route'
     | '/_authenticated/sos'
+    | '/api/chat'
     | '/api/public/hooks/ingest-incidents'
   fileRoutesById: FileRoutesById
 }
@@ -184,6 +196,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiChatRoute: typeof ApiChatRoute
   ApiPublicHooksIngestIncidentsRoute: typeof ApiPublicHooksIngestIncidentsRoute
 }
 
@@ -215,6 +228,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/sos': {
@@ -313,6 +333,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiChatRoute: ApiChatRoute,
   ApiPublicHooksIngestIncidentsRoute: ApiPublicHooksIngestIncidentsRoute,
 }
 export const routeTree = rootRouteImport
