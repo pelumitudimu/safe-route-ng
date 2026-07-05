@@ -2,10 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+
 export interface AssistantMessage {
   id: string;
   role: "user" | "assistant" | "system";
-  parts: Array<Record<string, unknown>>;
+  parts: Json[];
 }
 
 interface StoredRow {
