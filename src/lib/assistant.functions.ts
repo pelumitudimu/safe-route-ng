@@ -1,7 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
-import type { UIMessage } from "ai";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+export interface AssistantMessage {
+  id: string;
+  role: "user" | "assistant" | "system";
+  parts: Array<Record<string, unknown>>;
+}
 
 interface StoredRow {
   id: string;
@@ -10,10 +15,10 @@ interface StoredRow {
   created_at: string;
 }
 
-/** Load the signed-in user's ongoing assistant conversation as UIMessages. */
+/** Load the signed-in user's ongoing assistant conversation. */
 export const getAssistantMessages = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<UIMessage[]> => {
+  .handler(async ({ context }): Promise<AssistantMessage[]> => {
     const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("assistant_messages")
@@ -26,7 +31,7 @@ export const getAssistantMessages = createServerFn({ method: "GET" })
     return (data as StoredRow[]).map((row) => ({
       id: row.id,
       role: row.role,
-      parts: Array.isArray(row.parts) ? (row.parts as UIMessage["parts"]) : [],
+      parts: Array.isArray(row.parts) ? (row.parts as Array<Record<string, unknown>>) : [],
     }));
   });
 
