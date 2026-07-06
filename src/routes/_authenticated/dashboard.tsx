@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { ShieldAlert, Flag, TrendingUp, CheckCircle2, ArrowRight } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RiskPill } from "@/components/safety-badges";
+import { LiveIndicator } from "@/components/LiveIndicator";
 import { IncidentCard } from "@/components/incidents/IncidentCard";
-import { supabase } from "@/integrations/supabase/client";
+import { useLiveIncidents } from "@/hooks/use-live-incidents";
 import { useAuth } from "@/hooks/use-auth";
-import { areaRisk, DEFAULT_CENTER, type Incident } from "@/lib/safety";
+import { areaRisk, DEFAULT_CENTER } from "@/lib/safety";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -26,18 +26,8 @@ function Dashboard() {
     );
   }, []);
 
-  const { data: incidents = [] } = useQuery({
-    queryKey: ["incidents"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("incidents")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(200);
-      return (data ?? []) as Incident[];
-    },
-    refetchInterval: 30000,
-  });
+  const { data: incidents = [] } = useLiveIncidents(200);
+
 
   const risk = useMemo(() => areaRisk(incidents, loc[0], loc[1], 5), [incidents, loc]);
   const last24 = incidents.filter((i) => Date.now() - new Date(i.created_at).getTime() < 86400000);
