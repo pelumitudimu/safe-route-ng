@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { Flame, Layers, LocateFixed } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
+import { LiveIndicator } from "@/components/LiveIndicator";
 import { ClientOnly } from "@/components/ClientOnly";
 import SafetyMap from "@/components/map/SafetyMap";
-import { supabase } from "@/integrations/supabase/client";
-import { CATEGORY_LIST, CATEGORY_META, DEFAULT_CENTER, type Incident, type IncidentCategory } from "@/lib/safety";
+import { useLiveIncidents } from "@/hooks/use-live-incidents";
+import { CATEGORY_LIST, CATEGORY_META, DEFAULT_CENTER, type IncidentCategory } from "@/lib/safety";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/map")({
