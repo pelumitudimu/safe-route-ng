@@ -40,7 +40,10 @@ function Dashboard() {
         <Card className="border-border bg-card p-6 shadow-card">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">Safety near you</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground">Safety near you</p>
+                <LiveIndicator />
+              </div>
               <h2 className="mt-1 font-display text-2xl font-bold">{risk.description}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Based on {incidents.filter((i) => i.status !== "resolved").length} active reports nearby.
