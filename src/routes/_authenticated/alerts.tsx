@@ -59,7 +59,7 @@ function AlertsPage() {
   const danger = incidents.filter((i) => (i.severity === "high" || i.severity === "critical") && i.status !== "resolved");
 
   return (
-    <AppLayout title="Alerts & Verification">
+    <AppLayout title="Alerts & Verification" action={<LiveIndicator />}>
       <Tabs defaultValue="danger" className="mx-auto max-w-2xl">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="danger">Danger</TabsTrigger>
