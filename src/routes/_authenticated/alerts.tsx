@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { IncidentCard } from "@/components/incidents/IncidentCard";
+import { LiveIndicator } from "@/components/LiveIndicator";
+import { useLiveIncidents } from "@/hooks/use-live-incidents";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { timeAgo, type Incident } from "@/lib/safety";
@@ -18,14 +19,7 @@ function AlertsPage() {
   const [votes, setVotes] = useState<Record<string, "confirm" | "dispute">>({});
   const [notifs, setNotifs] = useState<{ id: string; title: string; body: string | null; created_at: string }[]>([]);
 
-  const { data: incidents = [], refetch } = useQuery({
-    queryKey: ["incidents"],
-    queryFn: async () => {
-      const { data } = await supabase.from("incidents").select("*").order("created_at", { ascending: false }).limit(200);
-      return (data ?? []) as Incident[];
-    },
-    refetchInterval: 30000,
-  });
+  const { data: incidents = [], refetch } = useLiveIncidents(200);
 
   useEffect(() => {
     if (!user) return;
