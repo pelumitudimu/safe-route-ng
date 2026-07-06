@@ -28,14 +28,7 @@ function MapPage() {
     });
   }, []);
 
-  const { data: incidents = [] } = useQuery({
-    queryKey: ["incidents"],
-    queryFn: async () => {
-      const { data } = await supabase.from("incidents").select("*").limit(500);
-      return (data ?? []) as Incident[];
-    },
-    refetchInterval: 30000,
-  });
+  const { data: incidents = [] } = useLiveIncidents(500);
 
   const filtered = filter === "all" ? incidents : incidents.filter((i) => i.category === filter);
 
