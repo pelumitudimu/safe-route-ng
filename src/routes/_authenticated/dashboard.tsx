@@ -77,7 +77,10 @@ function Dashboard() {
 
         {/* Recent */}
         <div className="mt-2 flex items-center justify-between">
-          <h3 className="font-display text-lg font-bold">Recent incidents</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-display text-lg font-bold">Recent incidents</h3>
+            <LiveIndicator />
+          </div>
           <Button asChild variant="ghost" size="sm">
             <Link to="/alerts">View all <ArrowRight className="h-4 w-4" /></Link>
           </Button>
