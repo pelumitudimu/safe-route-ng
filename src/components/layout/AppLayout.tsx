@@ -42,6 +42,7 @@ const MOBILE_NAV = [
   { to: "/dashboard", label: "Home", icon: LayoutDashboard },
   { to: "/map", label: "Map", icon: MapIcon },
   { to: "/report", label: "Report", icon: Flag },
+  { to: "/assistant", label: "Assistant", icon: Bot },
   { to: "/circle", label: "Circle", icon: Users },
   { to: "/profile", label: "Profile", icon: User },
 ] as const;
