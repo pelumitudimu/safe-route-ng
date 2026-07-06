@@ -151,7 +151,7 @@ export function AppLayout({
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-background/95 backdrop-blur-md md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-border bg-background/95 backdrop-blur-md md:hidden">
         {MOBILE_NAV.map((item) => {
           const active = pathname === item.to;
           const isReport = item.to === "/report";
