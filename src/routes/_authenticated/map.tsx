@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { Flame, Layers, LocateFixed } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
+import { LiveIndicator } from "@/components/LiveIndicator";
 import { ClientOnly } from "@/components/ClientOnly";
 import SafetyMap from "@/components/map/SafetyMap";
-import { supabase } from "@/integrations/supabase/client";
-import { CATEGORY_LIST, CATEGORY_META, DEFAULT_CENTER, type Incident, type IncidentCategory } from "@/lib/safety";
+import { useLiveIncidents } from "@/hooks/use-live-incidents";
+import { CATEGORY_LIST, CATEGORY_META, DEFAULT_CENTER, type IncidentCategory } from "@/lib/safety";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/map")({
@@ -28,14 +28,7 @@ function MapPage() {
     });
   }, []);
 
-  const { data: incidents = [] } = useQuery({
-    queryKey: ["incidents"],
-    queryFn: async () => {
-      const { data } = await supabase.from("incidents").select("*").limit(500);
-      return (data ?? []) as Incident[];
-    },
-    refetchInterval: 30000,
-  });
+  const { data: incidents = [] } = useLiveIncidents(500);
 
   const filtered = filter === "all" ? incidents : incidents.filter((i) => i.category === filter);
 
@@ -44,15 +37,18 @@ function MapPage() {
       title="Live Safety Map"
       fullBleed
       action={
-        <Button
-          size="sm"
-          variant={heatmap ? "default" : "outline"}
-          onClick={() => setHeatmap((v) => !v)}
-          className={cn("gap-1.5", heatmap && "bg-gradient-primary text-primary-foreground")}
-        >
-          {heatmap ? <Flame className="h-4 w-4" /> : <Layers className="h-4 w-4" />}
-          {heatmap ? "Heatmap" : "Pins"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <LiveIndicator className="hidden sm:inline-flex" />
+          <Button
+            size="sm"
+            variant={heatmap ? "default" : "outline"}
+            onClick={() => setHeatmap((v) => !v)}
+            className={cn("gap-1.5", heatmap && "bg-gradient-primary text-primary-foreground")}
+          >
+            {heatmap ? <Flame className="h-4 w-4" /> : <Layers className="h-4 w-4" />}
+            {heatmap ? "Heatmap" : "Pins"}
+          </Button>
+        </div>
       }
     >
       <div className="relative h-[calc(100vh-9rem)] md:h-[calc(100vh-4rem)]">
