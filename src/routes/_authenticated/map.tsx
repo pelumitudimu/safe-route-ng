@@ -37,15 +37,18 @@ function MapPage() {
       title="Live Safety Map"
       fullBleed
       action={
-        <Button
-          size="sm"
-          variant={heatmap ? "default" : "outline"}
-          onClick={() => setHeatmap((v) => !v)}
-          className={cn("gap-1.5", heatmap && "bg-gradient-primary text-primary-foreground")}
-        >
-          {heatmap ? <Flame className="h-4 w-4" /> : <Layers className="h-4 w-4" />}
-          {heatmap ? "Heatmap" : "Pins"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <LiveIndicator className="hidden sm:inline-flex" />
+          <Button
+            size="sm"
+            variant={heatmap ? "default" : "outline"}
+            onClick={() => setHeatmap((v) => !v)}
+            className={cn("gap-1.5", heatmap && "bg-gradient-primary text-primary-foreground")}
+          >
+            {heatmap ? <Flame className="h-4 w-4" /> : <Layers className="h-4 w-4" />}
+            {heatmap ? "Heatmap" : "Pins"}
+          </Button>
+        </div>
       }
     >
       <div className="relative h-[calc(100vh-9rem)] md:h-[calc(100vh-4rem)]">
