@@ -137,14 +137,14 @@ function AssistantPage() {
                 icon={
                   <img
                     src={guardian}
-                    alt="SafeRoute guardian assistant"
+                    alt="Fayol safety assistant"
                     width={72}
                     height={72}
                     loading="lazy"
                     className="h-18 w-18"
                   />
                 }
-                title="How can I help you stay safe?"
+                title="Hi, I'm Fayol — how can I help you stay safe?"
                 description="Ask about safety in any Nigerian area — I check live incident reports — or get emergency guidance and app help."
               >
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
