@@ -80,6 +80,10 @@ function AssistantPage() {
   const router = useRouter();
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { data: liveIncidents } = useLiveIncidents(500);
+  const recentCount = (liveIncidents ?? []).filter(
+    (i) => Date.now() - new Date(i.created_at).getTime() < 24 * 60 * 60 * 1000,
+  ).length;
 
   const { messages, sendMessage, status } = useChat({
     id: "assistant",
