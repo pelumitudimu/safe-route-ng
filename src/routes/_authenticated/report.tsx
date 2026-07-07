@@ -45,6 +45,7 @@ function ReportPage() {
   const [address, setAddress] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const { data: liveIncidents } = useLiveIncidents(8);
 
   useEffect(() => {
     navigator.geolocation?.getCurrentPosition(async (p) => {
