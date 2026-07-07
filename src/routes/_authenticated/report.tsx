@@ -177,6 +177,24 @@ function ReportPage() {
         <Button onClick={submit} disabled={loading} size="lg" className="w-full bg-gradient-primary text-primary-foreground shadow-glow">
           {loading ? "Submitting..." : "Submit report"}
         </Button>
+
+        <section className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-base font-bold">Incoming reports</h2>
+            <LiveIndicator />
+          </div>
+          {liveIncidents && liveIncidents.length > 0 ? (
+            <div className="space-y-2.5">
+              {liveIncidents.map((inc) => (
+                <IncidentCard key={inc.id} incident={inc} compact />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              New reports will appear here as they come in.
+            </p>
+          )}
+        </section>
       </div>
     </AppLayout>
   );
