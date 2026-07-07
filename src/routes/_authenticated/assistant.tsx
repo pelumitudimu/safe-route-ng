@@ -33,6 +33,8 @@ import {
   type PromptInputMessage,
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
+import { LiveIndicator } from "@/components/LiveIndicator";
+import { useLiveIncidents } from "@/hooks/use-live-incidents";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getAssistantMessages,
@@ -78,6 +80,10 @@ function AssistantPage() {
   const router = useRouter();
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { data: liveIncidents } = useLiveIncidents(500);
+  const recentCount = (liveIncidents ?? []).filter(
+    (i) => Date.now() - new Date(i.created_at).getTime() < 24 * 60 * 60 * 1000,
+  ).length;
 
   const { messages, sendMessage, status } = useChat({
     id: "assistant",
@@ -120,11 +126,14 @@ function AssistantPage() {
     <AppLayout
       title="Fayol"
       action={
-        messages.length > 0 ? (
-          <Button variant="ghost" size="sm" onClick={handleClear}>
-            <RotateCcw className="h-4 w-4" /> Clear
-          </Button>
-        ) : undefined
+        <div className="flex items-center gap-1.5">
+          <LiveIndicator />
+          {messages.length > 0 ? (
+            <Button variant="ghost" size="sm" onClick={handleClear}>
+              <RotateCcw className="h-4 w-4" /> Clear
+            </Button>
+          ) : null}
+        </div>
       }
       fullBleed
     >
@@ -145,7 +154,7 @@ function AssistantPage() {
                   />
                 }
                 title="Hi, I'm Fayol — how can I help you stay safe?"
-                description="Ask about safety in any Nigerian area — I check live incident reports — or get emergency guidance and app help."
+                description={`Ask about safety in any Nigerian area — I check live incident reports${recentCount > 0 ? ` (${recentCount} reported in the last 24h)` : ""} — or get emergency guidance and app help.`}
               >
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
                   {SUGGESTIONS.map((s) => (

@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
+import { useNavSignals } from "@/hooks/use-nav-signals";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -61,6 +62,13 @@ export function AppLayout({
   const { profile, user, signOut } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { recentIncidents, pendingCircle, unreadAlerts } = useNavSignals();
+
+  const badgeFor = (to: string): number | undefined => {
+    if (to === "/alerts") return unreadAlerts || recentIncidents || undefined;
+    if (to === "/circle") return pendingCircle || undefined;
+    return undefined;
+  };
 
   const initials = (profile?.display_name || user?.email || "U").slice(0, 2).toUpperCase();
 
@@ -79,6 +87,7 @@ export function AppLayout({
         <nav className="mt-8 flex flex-1 flex-col gap-1">
           {NAV.map((item) => {
             const active = pathname === item.to;
+            const badge = badgeFor(item.to);
             return (
               <Link
                 key={item.to}
@@ -92,6 +101,11 @@ export function AppLayout({
               >
                 <item.icon className="h-4.5 w-4.5" />
                 {item.label}
+                {badge ? (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
+                    {badge > 99 ? "99+" : badge}
+                  </span>
+                ) : null}
               </Link>
             );
           })}
@@ -155,15 +169,21 @@ export function AppLayout({
         {MOBILE_NAV.map((item) => {
           const active = pathname === item.to;
           const isReport = item.to === "/report";
+          const badge = badgeFor(item.to);
           return (
             <Link
               key={item.to}
               to={item.to}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium",
+                "relative flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium",
                 active ? "text-primary" : "text-muted-foreground",
               )}
             >
+              {badge ? (
+                <span className="absolute right-3 top-1.5 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
+                  {badge > 9 ? "9+" : badge}
+                </span>
+              ) : null}
               <span
                 className={cn(
                   "flex items-center justify-center",

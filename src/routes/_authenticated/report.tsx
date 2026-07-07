@@ -12,6 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClientOnly } from "@/components/ClientOnly";
 import SafetyMap from "@/components/map/SafetyMap";
+import { LiveIndicator } from "@/components/LiveIndicator";
+import { IncidentCard } from "@/components/incidents/IncidentCard";
+import { useLiveIncidents } from "@/hooks/use-live-incidents";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { uploadIncidentPhoto } from "@/lib/storage";
@@ -42,6 +45,7 @@ function ReportPage() {
   const [address, setAddress] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const { data: liveIncidents } = useLiveIncidents(8);
 
   useEffect(() => {
     navigator.geolocation?.getCurrentPosition(async (p) => {
@@ -173,6 +177,24 @@ function ReportPage() {
         <Button onClick={submit} disabled={loading} size="lg" className="w-full bg-gradient-primary text-primary-foreground shadow-glow">
           {loading ? "Submitting..." : "Submit report"}
         </Button>
+
+        <section className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-base font-bold">Incoming reports</h2>
+            <LiveIndicator />
+          </div>
+          {liveIncidents && liveIncidents.length > 0 ? (
+            <div className="space-y-2.5">
+              {liveIncidents.map((inc) => (
+                <IncidentCard key={inc.id} incident={inc} compact />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              New reports will appear here as they come in.
+            </p>
+          )}
+        </section>
       </div>
     </AppLayout>
   );
