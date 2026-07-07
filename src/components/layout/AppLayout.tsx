@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/map", label: "Live Map", icon: MapIcon },
-  { to: "/assistant", label: "Assistant", icon: Bot },
+  { to: "/assistant", label: "Fayol", icon: Bot },
   { to: "/report", label: "Report", icon: Flag },
   { to: "/safe-route", label: "Safe Route", icon: RouteIcon },
   { to: "/circle", label: "Family & Friends", icon: Users },
@@ -42,7 +42,7 @@ const MOBILE_NAV = [
   { to: "/dashboard", label: "Home", icon: LayoutDashboard },
   { to: "/map", label: "Map", icon: MapIcon },
   { to: "/report", label: "Report", icon: Flag },
-  { to: "/assistant", label: "Assistant", icon: Bot },
+  { to: "/assistant", label: "Fayol", icon: Bot },
   { to: "/circle", label: "Circle", icon: Users },
   { to: "/profile", label: "Profile", icon: User },
 ] as const;

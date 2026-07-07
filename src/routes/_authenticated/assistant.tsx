@@ -44,14 +44,14 @@ export const Route = createFileRoute("/_authenticated/assistant")({
   loader: () => getAssistantMessages(),
   component: AssistantPage,
   errorComponent: () => (
-    <AppLayout title="Assistant">
+    <AppLayout title="Fayol">
       <p className="text-sm text-muted-foreground">
-        Could not load the assistant. Please refresh and try again.
+        Could not load Fayol. Please refresh and try again.
       </p>
     </AppLayout>
   ),
   notFoundComponent: () => (
-    <AppLayout title="Assistant">
+    <AppLayout title="Fayol">
       <p className="text-sm text-muted-foreground">Not found.</p>
     </AppLayout>
   ),
@@ -118,7 +118,7 @@ function AssistantPage() {
 
   return (
     <AppLayout
-      title="Safety Assistant"
+      title="Fayol"
       action={
         messages.length > 0 ? (
           <Button variant="ghost" size="sm" onClick={handleClear}>
@@ -137,14 +137,14 @@ function AssistantPage() {
                 icon={
                   <img
                     src={guardian}
-                    alt="SafeRoute guardian assistant"
+                    alt="Fayol safety assistant"
                     width={72}
                     height={72}
                     loading="lazy"
                     className="h-18 w-18"
                   />
                 }
-                title="How can I help you stay safe?"
+                title="Hi, I'm Fayol — how can I help you stay safe?"
                 description="Ask about safety in any Nigerian area — I check live incident reports — or get emergency guidance and app help."
               >
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
