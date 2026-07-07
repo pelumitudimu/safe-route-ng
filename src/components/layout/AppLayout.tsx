@@ -62,6 +62,13 @@ export function AppLayout({
   const { profile, user, signOut } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { recentIncidents, pendingCircle, unreadAlerts } = useNavSignals();
+
+  const badgeFor = (to: string): number | undefined => {
+    if (to === "/alerts") return unreadAlerts || recentIncidents || undefined;
+    if (to === "/circle") return pendingCircle || undefined;
+    return undefined;
+  };
 
   const initials = (profile?.display_name || user?.email || "U").slice(0, 2).toUpperCase();
 
