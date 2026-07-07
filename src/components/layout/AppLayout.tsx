@@ -169,15 +169,21 @@ export function AppLayout({
         {MOBILE_NAV.map((item) => {
           const active = pathname === item.to;
           const isReport = item.to === "/report";
+          const badge = badgeFor(item.to);
           return (
             <Link
               key={item.to}
               to={item.to}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium",
+                "relative flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium",
                 active ? "text-primary" : "text-muted-foreground",
               )}
             >
+              {badge ? (
+                <span className="absolute right-3 top-1.5 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
+                  {badge > 9 ? "9+" : badge}
+                </span>
+              ) : null}
               <span
                 className={cn(
                   "flex items-center justify-center",
