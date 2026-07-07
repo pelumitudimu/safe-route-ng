@@ -33,6 +33,8 @@ import {
   type PromptInputMessage,
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
+import { LiveIndicator } from "@/components/LiveIndicator";
+import { useLiveIncidents } from "@/hooks/use-live-incidents";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getAssistantMessages,
