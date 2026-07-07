@@ -126,11 +126,14 @@ function AssistantPage() {
     <AppLayout
       title="Fayol"
       action={
-        messages.length > 0 ? (
-          <Button variant="ghost" size="sm" onClick={handleClear}>
-            <RotateCcw className="h-4 w-4" /> Clear
-          </Button>
-        ) : undefined
+        <div className="flex items-center gap-1.5">
+          <LiveIndicator />
+          {messages.length > 0 ? (
+            <Button variant="ghost" size="sm" onClick={handleClear}>
+              <RotateCcw className="h-4 w-4" /> Clear
+            </Button>
+          ) : null}
+        </div>
       }
       fullBleed
     >
