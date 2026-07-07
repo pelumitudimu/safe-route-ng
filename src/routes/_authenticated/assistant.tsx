@@ -118,7 +118,7 @@ function AssistantPage() {
 
   return (
     <AppLayout
-      title="Safety Assistant"
+      title="Fayol"
       action={
         messages.length > 0 ? (
           <Button variant="ghost" size="sm" onClick={handleClear}>
