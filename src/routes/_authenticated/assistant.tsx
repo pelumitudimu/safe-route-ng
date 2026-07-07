@@ -154,7 +154,7 @@ function AssistantPage() {
                   />
                 }
                 title="Hi, I'm Fayol — how can I help you stay safe?"
-                description="Ask about safety in any Nigerian area — I check live incident reports — or get emergency guidance and app help."
+                description={`Ask about safety in any Nigerian area — I check live incident reports${recentCount > 0 ? ` (${recentCount} reported in the last 24h)` : ""} — or get emergency guidance and app help.`}
               >
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
                   {SUGGESTIONS.map((s) => (
