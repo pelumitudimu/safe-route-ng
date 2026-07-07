@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
+import { useNavSignals } from "@/hooks/use-nav-signals";
 import { cn } from "@/lib/utils";
 
 const NAV = [
