@@ -44,14 +44,14 @@ export const Route = createFileRoute("/_authenticated/assistant")({
   loader: () => getAssistantMessages(),
   component: AssistantPage,
   errorComponent: () => (
-    <AppLayout title="Assistant">
+    <AppLayout title="Fayol">
       <p className="text-sm text-muted-foreground">
-        Could not load the assistant. Please refresh and try again.
+        Could not load Fayol. Please refresh and try again.
       </p>
     </AppLayout>
   ),
   notFoundComponent: () => (
-    <AppLayout title="Assistant">
+    <AppLayout title="Fayol">
       <p className="text-sm text-muted-foreground">Not found.</p>
     </AppLayout>
   ),
