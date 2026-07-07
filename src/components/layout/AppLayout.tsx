@@ -87,6 +87,7 @@ export function AppLayout({
         <nav className="mt-8 flex flex-1 flex-col gap-1">
           {NAV.map((item) => {
             const active = pathname === item.to;
+            const badge = badgeFor(item.to);
             return (
               <Link
                 key={item.to}
@@ -100,6 +101,11 @@ export function AppLayout({
               >
                 <item.icon className="h-4.5 w-4.5" />
                 {item.label}
+                {badge ? (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
+                    {badge > 99 ? "99+" : badge}
+                  </span>
+                ) : null}
               </Link>
             );
           })}
