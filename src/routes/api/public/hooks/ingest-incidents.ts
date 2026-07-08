@@ -43,9 +43,27 @@ interface ExtractedIncident {
 
 const NIGERIA_BOUNDS = { minLat: 4, maxLat: 14, minLon: 2.5, maxLon: 15 };
 
-async function firecrawlSearchNews(apiKey: string): Promise<string> {
-  const query =
-    "Nigeria security incident kidnapping robbery attack banditry latest news";
+// A broad set of news signals so the feed stays comprehensive and up to date:
+// different incident types, major regions, and general safety coverage. Each
+// runs as its own Firecrawl news search and the results are merged + deduped.
+const NEWS_SIGNALS: string[] = [
+  "Nigeria kidnapping abduction latest news",
+  "Nigeria armed robbery attack latest news",
+  "Nigeria banditry herdsmen attack latest news",
+  "Nigeria terrorism Boko Haram ISWAP attack news",
+  "Nigeria communal clash violence killed news",
+  "Nigeria road accident crash casualties news",
+  "Nigeria fire explosion disaster news",
+  "Nigeria protest unrest security news",
+  "Lagos crime security incident news",
+  "Abuja FCT security incident news",
+  "Rivers Port Harcourt crime security news",
+  "Kaduna Katsina Zamfara Sokoto security attack news",
+  "Borno Yobe Adamawa security attack news",
+  "Anambra Imo Enugu southeast security news",
+];
+
+async function firecrawlSearchOne(apiKey: string, query: string): Promise<string> {
   const res = await fetch("https://api.firecrawl.dev/v2/search", {
     method: "POST",
     headers: {
@@ -54,7 +72,7 @@ async function firecrawlSearchNews(apiKey: string): Promise<string> {
     },
     body: JSON.stringify({
       query,
-      limit: 8,
+      limit: 6,
       tbs: "qdr:w", // past week
       sources: ["news"],
       scrapeOptions: { formats: ["markdown"], onlyMainContent: true },
@@ -62,7 +80,10 @@ async function firecrawlSearchNews(apiKey: string): Promise<string> {
   });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Firecrawl search failed (${res.status}): ${text.slice(0, 300)}`);
+    console.error(
+      `[ingest-incidents] Firecrawl search failed for "${query}" (${res.status}): ${text.slice(0, 200)}`,
+    );
+    return "";
   }
   const data = (await res.json()) as {
     data?: {
@@ -80,9 +101,30 @@ async function firecrawlSearchNews(apiKey: string): Promise<string> {
         ("snippet" in r && r.snippet) ||
         ("description" in r && (r as { description?: string }).description) ||
         "";
-      return `SOURCE_URL: ${url}\nTITLE: ${title}\nCONTENT: ${String(body).slice(0, 2500)}`;
+      return `SOURCE_URL: ${url}\nTITLE: ${title}\nCONTENT: ${String(body).slice(0, 2000)}`;
     })
     .join("\n\n---\n\n");
+}
+
+async function firecrawlSearchNews(apiKey: string): Promise<string> {
+  // Run every signal in parallel, then merge and dedupe by SOURCE_URL so we
+  // don't feed the same article to the extractor twice.
+  const settled = await Promise.allSettled(
+    NEWS_SIGNALS.map((q) => firecrawlSearchOne(apiKey, q)),
+  );
+  const blocks: string[] = [];
+  const seen = new Set<string>();
+  for (const outcome of settled) {
+    if (outcome.status !== "fulfilled" || !outcome.value) continue;
+    for (const block of outcome.value.split("\n\n---\n\n")) {
+      const match = block.match(/^SOURCE_URL:\s*(.+)$/m);
+      const url = match?.[1]?.trim();
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+      blocks.push(block);
+    }
+  }
+  return blocks.join("\n\n---\n\n");
 }
 
 async function extractIncidents(
@@ -111,7 +153,7 @@ Respond as JSON: { "incidents": [ ... ] }`;
       model: "google/gemini-3-flash-preview",
       messages: [
         { role: "system", content: system },
-        { role: "user", content: newsText.slice(0, 20000) },
+        { role: "user", content: newsText.slice(0, 60000) },
       ],
       response_format: { type: "json_object" },
     }),
