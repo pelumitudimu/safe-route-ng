@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useId, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -13,6 +13,7 @@ import { useLiveIncidents } from "@/hooks/use-live-incidents";
 export function useNavSignals() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const instanceId = useId();
   const { data: incidents } = useLiveIncidents(500);
 
   const recentIncidents = useMemo(() => {
@@ -54,7 +55,7 @@ export function useNavSignals() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel("nav-signals")
+      .channel(`nav-signals:${instanceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "circle_connections" },
@@ -71,7 +72,7 @@ export function useNavSignals() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, queryClient]);
+  }, [user, queryClient, instanceId]);
 
   return { recentIncidents, pendingCircle, unreadAlerts };
 }
