@@ -10,6 +10,10 @@ import type { Incident } from "@/lib/safety";
  */
 export function useLiveIncidents(limit = 500) {
   const queryClient = useQueryClient();
+  // Unique per hook instance so multiple consumers on the same page don't
+  // collide on one channel topic (which throws "cannot add postgres_changes
+  // callbacks ... after subscribe()").
+  const instanceId = useId();
 
   const query = useQuery({
     queryKey: ["incidents"],
@@ -28,7 +32,7 @@ export function useLiveIncidents(limit = 500) {
 
   useEffect(() => {
     const channel = supabase
-      .channel("incidents-live")
+      .channel(`incidents-live:${instanceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "incidents" },
@@ -41,7 +45,7 @@ export function useLiveIncidents(limit = 500) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, instanceId]);
 
   return query;
 }
