@@ -13,6 +13,7 @@ import { useLiveIncidents } from "@/hooks/use-live-incidents";
 export function useNavSignals() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const instanceId = useId();
   const { data: incidents } = useLiveIncidents(500);
 
   const recentIncidents = useMemo(() => {
