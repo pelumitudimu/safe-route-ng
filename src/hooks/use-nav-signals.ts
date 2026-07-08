@@ -55,7 +55,7 @@ export function useNavSignals() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel("nav-signals")
+      .channel(`nav-signals:${instanceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "circle_connections" },
@@ -72,7 +72,7 @@ export function useNavSignals() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, queryClient]);
+  }, [user, queryClient, instanceId]);
 
   return { recentIncidents, pendingCircle, unreadAlerts };
 }
