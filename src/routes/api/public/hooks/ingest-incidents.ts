@@ -153,7 +153,7 @@ Respond as JSON: { "incidents": [ ... ] }`;
       model: "google/gemini-3-flash-preview",
       messages: [
         { role: "system", content: system },
-        { role: "user", content: newsText.slice(0, 20000) },
+        { role: "user", content: newsText.slice(0, 60000) },
       ],
       response_format: { type: "json_object" },
     }),
