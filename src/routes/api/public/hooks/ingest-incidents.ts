@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// Auto-ingest recent, documented Nigerian security incidents every 30 minutes.
+// Auto-ingest recent, documented Nigerian security incidents every minute.
 // Flow: Firecrawl news search -> Lovable AI structured extraction -> geocode -> insert.
 // Placed under /api/public so pg_cron can call it without an auth session.
 // A lightweight shared-secret (the project anon key in the `apikey` header) gates it.
@@ -31,6 +31,10 @@ const CATEGORIES: IncidentCategory[] = [
   "other",
 ];
 const SEVERITIES: IncidentSeverity[] = ["low", "medium", "high", "critical"];
+const MAX_SIGNAL_QUERIES_PER_RUN = 4;
+const FIRECRAWL_TIMEOUT_MS = 12_000;
+const AI_TIMEOUT_MS = 35_000;
+const GEOCODE_TIMEOUT_MS = 6_000;
 
 interface ExtractedIncident {
   title: string;
@@ -61,23 +65,69 @@ const NEWS_SIGNALS: string[] = [
   "Kaduna Katsina Zamfara Sokoto security attack news",
   "Borno Yobe Adamawa security attack news",
   "Anambra Imo Enugu southeast security news",
+  "Punch Nigeria crime kidnapping police latest",
+  "Channels TV Nigeria security incident latest",
+  "Daily Trust Nigeria bandits kidnapping latest",
+  "Vanguard Nigeria crime police latest",
+  "Premium Times Nigeria insecurity attack latest",
+  "TheCable Nigeria police attack incident latest",
+  "FRSC Nigeria road crash casualties latest",
+  "NEMA Nigeria fire explosion emergency latest",
 ];
 
-async function firecrawlSearchOne(apiKey: string, query: string): Promise<string> {
-  const res = await fetch("https://api.firecrawl.dev/v2/search", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      query,
-      limit: 6,
-      tbs: "qdr:w", // past week
-      sources: ["news"],
-      scrapeOptions: { formats: ["markdown"], onlyMainContent: true },
-    }),
+async function fetchWithTimeout(
+  input: string,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function getSignalsForThisRun(): string[] {
+  // Rotate through the full signal list so each minute stays fast enough for
+  // cron while still covering every source group over a few runs.
+  const start = new Date().getUTCMinutes() % NEWS_SIGNALS.length;
+  return Array.from({ length: MAX_SIGNAL_QUERIES_PER_RUN }, (_, index) => {
+    return NEWS_SIGNALS[(start + index) % NEWS_SIGNALS.length];
   });
+}
+
+async function firecrawlSearchOne(apiKey: string, query: string): Promise<string> {
+  let res: Response;
+  try {
+    res = await fetchWithTimeout(
+      "https://api.firecrawl.dev/v2/search",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query,
+          limit: 4,
+          lang: "en",
+          country: "ng",
+          tbs: "qdr:d", // past day, so the app feels up to date
+          sources: ["news"],
+          scrapeOptions: { formats: ["markdown"], onlyMainContent: true },
+        }),
+      },
+      FIRECRAWL_TIMEOUT_MS,
+    );
+  } catch (err) {
+    console.error(
+      `[ingest-incidents] Firecrawl search timed out for "${query}":`,
+      err instanceof Error ? err.message : err,
+    );
+    return "";
+  }
   if (!res.ok) {
     const text = await res.text();
     console.error(
@@ -86,12 +136,21 @@ async function firecrawlSearchOne(apiKey: string, query: string): Promise<string
     return "";
   }
   const data = (await res.json()) as {
-    data?: {
-      news?: Array<{ title?: string; url?: string; markdown?: string; snippet?: string }>;
-      web?: Array<{ title?: string; url?: string; markdown?: string; description?: string }>;
-    };
+    data?:
+      | Array<{ title?: string; url?: string; markdown?: string; snippet?: string; description?: string }>
+      | {
+          news?: Array<{ title?: string; url?: string; markdown?: string; snippet?: string }>;
+          web?: Array<{ title?: string; url?: string; markdown?: string; description?: string }>;
+        };
+    news?: Array<{ title?: string; url?: string; markdown?: string; snippet?: string }>;
+    web?: Array<{ title?: string; url?: string; markdown?: string; description?: string }>;
   };
-  const results = [...(data.data?.news ?? []), ...(data.data?.web ?? [])];
+  const results = Array.isArray(data.data)
+    ? data.data
+    : [
+        ...(data.data?.news ?? data.news ?? []),
+        ...(data.data?.web ?? data.web ?? []),
+      ];
   return results
     .map((r) => {
       const url = r.url ?? "";
@@ -110,7 +169,7 @@ async function firecrawlSearchNews(apiKey: string): Promise<string> {
   // Run every signal in parallel, then merge and dedupe by SOURCE_URL so we
   // don't feed the same article to the extractor twice.
   const settled = await Promise.allSettled(
-    NEWS_SIGNALS.map((q) => firecrawlSearchOne(apiKey, q)),
+    getSignalsForThisRun().map((q) => firecrawlSearchOne(apiKey, q)),
   );
   const blocks: string[] = [];
   const seen = new Set<string>();
@@ -132,7 +191,7 @@ async function extractIncidents(
   newsText: string,
 ): Promise<ExtractedIncident[]> {
   const system = `You extract real, documented Nigerian security incidents from news text.
-Return ONLY incidents that clearly happened in Nigeria within the last 5 years.
+Return ONLY incidents that clearly happened in Nigeria recently, preferably from the last 30 days.
 For each incident output a JSON object with:
 - title: short factual headline (max 90 chars)
 - description: 1-2 sentence factual summary
@@ -143,21 +202,25 @@ For each incident output a JSON object with:
 Skip opinion pieces, roundups without a specific location, and anything outside Nigeria.
 Respond as JSON: { "incidents": [ ... ] }`;
 
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${lovableKey}`,
-      "Content-Type": "application/json",
+  const res = await fetchWithTimeout(
+    "https://ai.gateway.lovable.dev/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${lovableKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: newsText.slice(0, 30_000) },
+        ],
+        response_format: { type: "json_object" },
+      }),
     },
-    body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: newsText.slice(0, 60000) },
-      ],
-      response_format: { type: "json_object" },
-    }),
-  });
+    AI_TIMEOUT_MS,
+  );
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`AI extraction failed (${res.status}): ${text.slice(0, 300)}`);
@@ -191,9 +254,13 @@ async function geocode(
     const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ng&q=${encodeURIComponent(
       place,
     )}`;
-    const res = await fetch(url, {
-      headers: { Accept: "application/json", "User-Agent": "SafeRouteNigeria/1.0" },
-    });
+    const res = await fetchWithTimeout(
+      url,
+      {
+        headers: { Accept: "application/json", "User-Agent": "SafeRouteNigeria/1.0" },
+      },
+      GEOCODE_TIMEOUT_MS,
+    );
     if (!res.ok) return null;
     const data = (await res.json()) as Array<{
       lat: string;
