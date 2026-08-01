@@ -11,6 +11,7 @@ import {
   Siren,
   Bot,
   BarChart3,
+  History as HistoryIcon,
   LogOut,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
@@ -35,6 +36,7 @@ const NAV = [
   { to: "/assistant", label: "Fayol", icon: Bot },
   { to: "/report", label: "Report", icon: Flag },
   { to: "/safe-route", label: "Safe Route", icon: RouteIcon },
+  { to: "/history", label: "Safety History", icon: HistoryIcon },
   { to: "/statistics", label: "Statistics", icon: BarChart3 },
   { to: "/circle", label: "Family & Friends", icon: Users },
   { to: "/alerts", label: "Alerts", icon: Bell },
@@ -44,9 +46,10 @@ const NAV = [
 const MOBILE_NAV = [
   { to: "/dashboard", label: "Home", icon: LayoutDashboard },
   { to: "/map", label: "Map", icon: MapIcon },
+  { to: "/history", label: "History", icon: HistoryIcon },
   { to: "/report", label: "Report", icon: Flag },
   { to: "/assistant", label: "Fayol", icon: Bot },
-  { to: "/circle", label: "Circle", icon: Users },
+  { to: "/statistics", label: "Stats", icon: BarChart3 },
   { to: "/profile", label: "Profile", icon: User },
 ] as const;
 
@@ -167,7 +170,7 @@ export function AppLayout({
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-border bg-background/95 backdrop-blur-md md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-7 border-t border-border bg-background/95 backdrop-blur-md md:hidden">
         {MOBILE_NAV.map((item) => {
           const active = pathname === item.to;
           const isReport = item.to === "/report";
