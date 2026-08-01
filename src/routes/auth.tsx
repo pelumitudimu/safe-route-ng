@@ -19,6 +19,20 @@ export const Route = createFileRoute("/auth")({
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters").max(72);
 
+function friendlyError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login credentials"))
+    return "That email and password don't match. Check the password, or sign up if you're new.";
+  if (m.includes("email not confirmed")) return "Confirm your email first, then sign in.";
+  if (m.includes("user already registered"))
+    return "You already have an account — signing you in instead.";
+  if (m.includes("rate limit") || m.includes("too many"))
+    return "Too many attempts. Wait a minute and try again.";
+  if (m.includes("fetch") || m.includes("network"))
+    return "Network problem reaching the server. Check your connection and retry.";
+  return message;
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -27,10 +41,22 @@ function AuthPage() {
   const [displayName, setDisplayName] = useState("");
 
   useEffect(() => {
+    // Prefill the last used email so returning users only type a password.
+    const saved = typeof window !== "undefined" ? localStorage.getItem("sr:last-email") : null;
+    if (saved) setEmail(saved);
+
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/dashboard" });
     });
   }, [navigate]);
+
+  const rememberEmail = (value: string) => {
+    try {
+      localStorage.setItem("sr:last-email", value);
+    } catch {
+      /* storage unavailable — non-fatal */
+    }
+  };
 
   const signIn = async () => {
     const e = emailSchema.safeParse(email);
@@ -38,9 +64,14 @@ function AuthPage() {
     if (!e.success) return toast.error(e.error.issues[0].message);
     if (!p.success) return toast.error(p.error.issues[0].message);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: e.data, password: p.data });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: e.data,
+      password: p.data,
+    });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error.message));
+    if (!data.session) return toast.error("Sign-in did not complete. Please try again.");
+    rememberEmail(e.data);
     toast.success("Welcome back!");
     navigate({ to: "/dashboard" });
   };
@@ -59,8 +90,26 @@ function AuthPage() {
         data: { display_name: displayName.trim() || e.data.split("@")[0] },
       },
     });
+
+    // Existing account? Fall straight through to sign-in instead of erroring out.
+    if (error && error.message.toLowerCase().includes("already registered")) {
+      const { data: signed, error: signInError } = await supabase.auth.signInWithPassword({
+        email: e.data,
+        password: p.data,
+      });
+      setLoading(false);
+      if (signInError) return toast.error(friendlyError(signInError.message));
+      if (signed.session) {
+        rememberEmail(e.data);
+        toast.success("Welcome back!");
+        navigate({ to: "/dashboard" });
+      }
+      return;
+    }
+
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error.message));
+    rememberEmail(e.data);
     // When email confirmation is disabled, sign-up returns a live session and
     // the browser's password manager can save the new credentials immediately.
     if (data.session) {
