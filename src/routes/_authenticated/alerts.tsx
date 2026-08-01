@@ -19,6 +19,7 @@ export const Route = createFileRoute("/_authenticated/alerts")({
 
 function AlertsPage() {
   const { user } = useAuth();
+  const { reader, toggle: toggleReader } = useReaderMode();
   const [votes, setVotes] = useState<Record<string, "confirm" | "dispute">>({});
   const [notifs, setNotifs] = useState<{ id: string; title: string; body: string | null; created_at: string }[]>([]);
 
