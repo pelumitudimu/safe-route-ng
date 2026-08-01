@@ -57,9 +57,18 @@ function AlertsPage() {
   };
 
   const danger = incidents.filter((i) => (i.severity === "high" || i.severity === "critical") && i.status !== "resolved");
+  const pending = incidents.filter((i) => i.status === "pending");
 
   return (
-    <AppLayout title="Alerts & Verification" action={<LiveIndicator />}>
+    <AppLayout
+      title="Alerts & Verification"
+      action={
+        <>
+          <ReaderModeToggle reader={reader} onToggle={toggleReader} />
+          <LiveIndicator className="hidden sm:inline-flex" />
+        </>
+      }
+    >
       <Tabs defaultValue="danger" className="mx-auto max-w-2xl">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="danger">Danger</TabsTrigger>
@@ -68,15 +77,27 @@ function AlertsPage() {
         </TabsList>
 
         <TabsContent value="danger" className="mt-4 grid gap-3">
-          {danger.map((i) => <IncidentCard key={i.id} incident={i} userVote={votes[i.id] ?? null} onVote={(v) => vote(i, v)} />)}
-          {danger.length === 0 && <Empty text="No high-risk alerts right now." />}
+          {reader ? (
+            <IncidentReader incidents={danger} />
+          ) : (
+            <>
+              {danger.map((i) => <IncidentCard key={i.id} incident={i} userVote={votes[i.id] ?? null} onVote={(v) => vote(i, v)} />)}
+              {danger.length === 0 && <Empty text="No high-risk alerts right now." />}
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="verify" className="mt-4 grid gap-3">
-          {incidents.filter((i) => i.status === "pending").map((i) => (
-            <IncidentCard key={i.id} incident={i} userVote={votes[i.id] ?? null} onVote={(v) => vote(i, v)} />
-          ))}
-          {incidents.filter((i) => i.status === "pending").length === 0 && <Empty text="Nothing to verify — all caught up!" />}
+          {reader ? (
+            <IncidentReader incidents={pending} />
+          ) : (
+            <>
+              {pending.map((i) => (
+                <IncidentCard key={i.id} incident={i} userVote={votes[i.id] ?? null} onVote={(v) => vote(i, v)} />
+              ))}
+              {pending.length === 0 && <Empty text="Nothing to verify — all caught up!" />}
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="you" className="mt-4 grid gap-3">
