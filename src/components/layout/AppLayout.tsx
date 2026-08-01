@@ -10,6 +10,7 @@ import {
   Users,
   Siren,
   Bot,
+  BarChart3,
   LogOut,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
@@ -34,6 +35,7 @@ const NAV = [
   { to: "/assistant", label: "Fayol", icon: Bot },
   { to: "/report", label: "Report", icon: Flag },
   { to: "/safe-route", label: "Safe Route", icon: RouteIcon },
+  { to: "/statistics", label: "Statistics", icon: BarChart3 },
   { to: "/circle", label: "Family & Friends", icon: Users },
   { to: "/alerts", label: "Alerts", icon: Bell },
   { to: "/profile", label: "Profile", icon: User },

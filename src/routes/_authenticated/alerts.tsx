@@ -4,6 +4,9 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { IncidentCard } from "@/components/incidents/IncidentCard";
 import { LiveIndicator } from "@/components/LiveIndicator";
+import { ReaderModeToggle } from "@/components/ReaderModeToggle";
+import { IncidentReader } from "@/components/incidents/IncidentReader";
+import { useReaderMode } from "@/hooks/use-reader-mode";
 import { useLiveIncidents } from "@/hooks/use-live-incidents";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -16,6 +19,7 @@ export const Route = createFileRoute("/_authenticated/alerts")({
 
 function AlertsPage() {
   const { user } = useAuth();
+  const { reader, toggle: toggleReader } = useReaderMode();
   const [votes, setVotes] = useState<Record<string, "confirm" | "dispute">>({});
   const [notifs, setNotifs] = useState<{ id: string; title: string; body: string | null; created_at: string }[]>([]);
 
@@ -57,9 +61,18 @@ function AlertsPage() {
   };
 
   const danger = incidents.filter((i) => (i.severity === "high" || i.severity === "critical") && i.status !== "resolved");
+  const pending = incidents.filter((i) => i.status === "pending");
 
   return (
-    <AppLayout title="Alerts & Verification" action={<LiveIndicator />}>
+    <AppLayout
+      title="Alerts & Verification"
+      action={
+        <>
+          <ReaderModeToggle reader={reader} onToggle={toggleReader} />
+          <LiveIndicator className="hidden sm:inline-flex" />
+        </>
+      }
+    >
       <Tabs defaultValue="danger" className="mx-auto max-w-2xl">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="danger">Danger</TabsTrigger>
@@ -68,15 +81,27 @@ function AlertsPage() {
         </TabsList>
 
         <TabsContent value="danger" className="mt-4 grid gap-3">
-          {danger.map((i) => <IncidentCard key={i.id} incident={i} userVote={votes[i.id] ?? null} onVote={(v) => vote(i, v)} />)}
-          {danger.length === 0 && <Empty text="No high-risk alerts right now." />}
+          {reader ? (
+            <IncidentReader incidents={danger} />
+          ) : (
+            <>
+              {danger.map((i) => <IncidentCard key={i.id} incident={i} userVote={votes[i.id] ?? null} onVote={(v) => vote(i, v)} />)}
+              {danger.length === 0 && <Empty text="No high-risk alerts right now." />}
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="verify" className="mt-4 grid gap-3">
-          {incidents.filter((i) => i.status === "pending").map((i) => (
-            <IncidentCard key={i.id} incident={i} userVote={votes[i.id] ?? null} onVote={(v) => vote(i, v)} />
-          ))}
-          {incidents.filter((i) => i.status === "pending").length === 0 && <Empty text="Nothing to verify — all caught up!" />}
+          {reader ? (
+            <IncidentReader incidents={pending} />
+          ) : (
+            <>
+              {pending.map((i) => (
+                <IncidentCard key={i.id} incident={i} userVote={votes[i.id] ?? null} onVote={(v) => vote(i, v)} />
+              ))}
+              {pending.length === 0 && <Empty text="Nothing to verify — all caught up!" />}
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="you" className="mt-4 grid gap-3">

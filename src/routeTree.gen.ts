@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AuthenticatedStatisticsRouteImport } from './routes/_authenticated/statistics'
 import { Route as AuthenticatedSosRouteImport } from './routes/_authenticated/sos'
 import { Route as AuthenticatedSafeRouteRouteImport } from './routes/_authenticated/safe-route'
 import { Route as AuthenticatedReportRouteImport } from './routes/_authenticated/report'
@@ -48,6 +49,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedStatisticsRoute = AuthenticatedStatisticsRouteImport.update({
+  id: '/statistics',
+  path: '/statistics',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSosRoute = AuthenticatedSosRouteImport.update({
   id: '/sos',
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/report': typeof AuthenticatedReportRoute
   '/safe-route': typeof AuthenticatedSafeRouteRoute
   '/sos': typeof AuthenticatedSosRoute
+  '/statistics': typeof AuthenticatedStatisticsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/public/hooks/ingest-incidents': typeof ApiPublicHooksIngestIncidentsRoute
 }
@@ -130,6 +137,7 @@ export interface FileRoutesByTo {
   '/report': typeof AuthenticatedReportRoute
   '/safe-route': typeof AuthenticatedSafeRouteRoute
   '/sos': typeof AuthenticatedSosRoute
+  '/statistics': typeof AuthenticatedStatisticsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/public/hooks/ingest-incidents': typeof ApiPublicHooksIngestIncidentsRoute
 }
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/_authenticated/report': typeof AuthenticatedReportRoute
   '/_authenticated/safe-route': typeof AuthenticatedSafeRouteRoute
   '/_authenticated/sos': typeof AuthenticatedSosRoute
+  '/_authenticated/statistics': typeof AuthenticatedStatisticsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/public/hooks/ingest-incidents': typeof ApiPublicHooksIngestIncidentsRoute
 }
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/safe-route'
     | '/sos'
+    | '/statistics'
     | '/api/chat'
     | '/api/public/hooks/ingest-incidents'
   fileRoutesByTo: FileRoutesByTo
@@ -182,6 +192,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/safe-route'
     | '/sos'
+    | '/statistics'
     | '/api/chat'
     | '/api/public/hooks/ingest-incidents'
   id:
@@ -199,6 +210,7 @@ export interface FileRouteTypes {
     | '/_authenticated/report'
     | '/_authenticated/safe-route'
     | '/_authenticated/sos'
+    | '/_authenticated/statistics'
     | '/api/chat'
     | '/api/public/hooks/ingest-incidents'
   fileRoutesById: FileRoutesById
@@ -248,6 +260,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/statistics': {
+      id: '/_authenticated/statistics'
+      path: '/statistics'
+      fullPath: '/statistics'
+      preLoaderRoute: typeof AuthenticatedStatisticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/sos': {
       id: '/_authenticated/sos'
@@ -332,6 +351,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportRoute: typeof AuthenticatedReportRoute
   AuthenticatedSafeRouteRoute: typeof AuthenticatedSafeRouteRoute
   AuthenticatedSosRoute: typeof AuthenticatedSosRoute
+  AuthenticatedStatisticsRoute: typeof AuthenticatedStatisticsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -344,6 +364,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportRoute: AuthenticatedReportRoute,
   AuthenticatedSafeRouteRoute: AuthenticatedSafeRouteRoute,
   AuthenticatedSosRoute: AuthenticatedSosRoute,
+  AuthenticatedStatisticsRoute: AuthenticatedStatisticsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
