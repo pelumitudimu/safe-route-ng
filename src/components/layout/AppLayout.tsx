@@ -35,6 +35,7 @@ const NAV = [
   { to: "/assistant", label: "Fayol", icon: Bot },
   { to: "/report", label: "Report", icon: Flag },
   { to: "/safe-route", label: "Safe Route", icon: RouteIcon },
+  { to: "/history", label: "Safety History", icon: HistoryIcon },
   { to: "/statistics", label: "Statistics", icon: BarChart3 },
   { to: "/circle", label: "Family & Friends", icon: Users },
   { to: "/alerts", label: "Alerts", icon: Bell },
@@ -44,9 +45,10 @@ const NAV = [
 const MOBILE_NAV = [
   { to: "/dashboard", label: "Home", icon: LayoutDashboard },
   { to: "/map", label: "Map", icon: MapIcon },
+  { to: "/history", label: "History", icon: HistoryIcon },
   { to: "/report", label: "Report", icon: Flag },
   { to: "/assistant", label: "Fayol", icon: Bot },
-  { to: "/circle", label: "Circle", icon: Users },
+  { to: "/statistics", label: "Stats", icon: BarChart3 },
   { to: "/profile", label: "Profile", icon: User },
 ] as const;
 
