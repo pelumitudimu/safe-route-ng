@@ -10,6 +10,7 @@ import {
   Users,
   Siren,
   Bot,
+  BarChart3,
   LogOut,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
