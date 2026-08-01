@@ -71,8 +71,10 @@ function Dashboard() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <ActionCard to="/map" title="Open live map" desc="Heatmaps & nearby incidents" />
           <ActionCard to="/report" title="Report incident" desc="Help keep others safe" />
+          <ActionCard to="/history" title="Safety history" desc="24h · 7d · 30d trends" />
           <ActionCard to="/safe-route" title="Plan a safe route" desc="Check before you travel" />
           <ActionCard to="/circle" title="Family & friends" desc="Share location & contacts" />
+          <ActionCard to="/statistics" title="Statistics" desc="Death rates & vital stats" />
         </div>
 
         {/* Recent */}
