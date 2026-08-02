@@ -133,6 +133,11 @@ async function firecrawlSearchOne(apiKey: string, query: string): Promise<string
     console.error(
       `[ingest-incidents] Firecrawl search failed for "${query}" (${res.status}): ${text.slice(0, 200)}`,
     );
+    if (res.status === 402) {
+      throw new Error(
+        "News provider out of credits (HTTP 402). Top up the Firecrawl plan to resume live ingestion.",
+      );
+    }
     return "";
   }
   const data = (await res.json()) as {
