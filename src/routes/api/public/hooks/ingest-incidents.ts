@@ -179,7 +179,14 @@ async function firecrawlSearchNews(apiKey: string): Promise<string> {
   const blocks: string[] = [];
   const seen = new Set<string>();
   for (const outcome of settled) {
-    if (outcome.status !== "fulfilled" || !outcome.value) continue;
+    if (outcome.status === "rejected") {
+      // Surface hard failures (e.g. out of credits) instead of silently
+      // reporting "no news results".
+      throw outcome.reason instanceof Error
+        ? outcome.reason
+        : new Error(String(outcome.reason));
+    }
+    if (!outcome.value) continue;
     for (const block of outcome.value.split("\n\n---\n\n")) {
       const match = block.match(/^SOURCE_URL:\s*(.+)$/m);
       const url = match?.[1]?.trim();
