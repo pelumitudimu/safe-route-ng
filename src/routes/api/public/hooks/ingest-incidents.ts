@@ -420,18 +420,39 @@ export const Route = createFileRoute("/api/public/hooks/ingest-incidents")({
 
         const firecrawlKey = process.env.FIRECRAWL_API_KEY;
         const lovableKey = process.env.LOVABLE_API_KEY;
-        if (!firecrawlKey || !lovableKey) {
-          return new Response(
-            JSON.stringify({ error: "Missing FIRECRAWL_API_KEY or LOVABLE_API_KEY" }),
-            { status: 500, headers: { "Content-Type": "application/json" } },
-          );
+        if (!lovableKey) {
+          return new Response(JSON.stringify({ error: "Missing LOVABLE_API_KEY" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          });
         }
 
         try {
-          const newsText = await firecrawlSearchNews(firecrawlKey);
+          // Free key-less sources always run; Firecrawl adds richer full-text
+          // when it has credits, but a failure there no longer stops ingestion.
+          let firecrawlNote: string | null = null;
+          const [freeBlocks, firecrawlText] = await Promise.all([
+            freeNewsSearch(),
+            firecrawlKey
+              ? firecrawlSearchNews(firecrawlKey).catch((err: unknown) => {
+                  firecrawlNote = err instanceof Error ? err.message : String(err);
+                  return "";
+                })
+              : Promise.resolve(""),
+          ]);
+          const newsText = mergeBlocks([
+            firecrawlText ? firecrawlText.split("\n\n---\n\n") : [],
+            freeBlocks,
+          ]);
           if (!newsText.trim()) {
-            return Response.json({ ok: true, inserted: 0, note: "No news results" });
+            return Response.json({
+              ok: true,
+              inserted: 0,
+              note: "No news results",
+              firecrawl_error: firecrawlNote,
+            });
           }
+
 
           const extracted = await extractIncidents(lovableKey, newsText);
           if (!extracted.length) {
