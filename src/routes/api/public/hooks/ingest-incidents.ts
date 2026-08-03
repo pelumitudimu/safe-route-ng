@@ -495,7 +495,7 @@ export const Route = createFileRoute("/api/public/hooks/ingest-incidents")({
           // Free key-less sources always run; Firecrawl adds richer full-text
           // when it has credits, but a failure there no longer stops ingestion.
           let firecrawlNote: string | null = null;
-          const [freeBlocks, firecrawlText] = await Promise.all([
+          const [free, firecrawlText] = await Promise.all([
             freeNewsSearch(),
             firecrawlKey
               ? firecrawlSearchNews(firecrawlKey).catch((err: unknown) => {
@@ -506,16 +506,18 @@ export const Route = createFileRoute("/api/public/hooks/ingest-incidents")({
           ]);
           const newsText = mergeBlocks([
             firecrawlText ? firecrawlText.split("\n\n---\n\n") : [],
-            freeBlocks,
+            free.blocks,
           ]);
           if (!newsText.trim()) {
             return Response.json({
               ok: true,
               inserted: 0,
               note: "No news results",
+              sources: free.diag,
               firecrawl_error: firecrawlNote,
             });
           }
+
 
 
           const extracted = await extractIncidents(lovableKey, newsText);
