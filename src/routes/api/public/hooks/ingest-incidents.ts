@@ -282,14 +282,78 @@ async function gdeltSearch(query: string): Promise<string[]> {
   }
 }
 
-async function freeNewsSearch(): Promise<string[]> {
-  const signals = getSignalsForThisRun();
-  const settled = await Promise.allSettled([
-    ...signals.map((q) => googleNewsRss(q)),
-    gdeltSearch(signals[0] ?? "Nigeria security incident"),
-  ]);
-  return settled.flatMap((o) => (o.status === "fulfilled" ? o.value : []));
+// Direct RSS feeds from Nigerian outlets. No key, no rate limits, and they
+// keep working from server environments where Google News may block requests.
+const OUTLET_FEEDS: string[] = [
+  "https://punchng.com/topics/news/feed/",
+  "https://www.vanguardngr.com/category/news/feed/",
+  "https://dailypost.ng/feed/",
+  "https://www.channelstv.com/feed/",
+  "https://www.premiumtimesng.com/feed",
+  "https://saharareporters.com/feeds/latest/feed",
+  "https://dailytrust.com/feed/",
+  "https://www.thecable.ng/feed",
+];
+
+const INCIDENT_KEYWORDS =
+  /kidnap|abduct|bandit|gunmen|attack|killed|robbery|robber|shot|shooting|explosion|blast|fire|crash|accident|protest|clash|militant|insurgent|terror|police|arrest|hoodlum|cult|stab|ambush|rescue/i;
+
+function parseRssItems(xml: string, limit: number): string[] {
+  const items = xml.split(/<item[\s>]/).slice(1, limit + 1);
+  return items
+    .map((item) => {
+      const title = stripHtml(item.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? "");
+      const link = stripHtml(item.match(/<link>([\s\S]*?)<\/link>/)?.[1] ?? "");
+      const desc = stripHtml(
+        item.match(/<description>([\s\S]*?)<\/description>/)?.[1] ?? "",
+      ).slice(0, 1200);
+      if (!title || !link) return "";
+      return `SOURCE_URL: ${link}\nTITLE: ${title}\nCONTENT: ${desc}`;
+    })
+    .filter(Boolean);
 }
+
+async function outletFeed(url: string): Promise<string[]> {
+  try {
+    const res = await fetchWithTimeout(
+      url,
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (compatible; SafeRouteNigeria/1.0; +https://saferoute.ng)",
+          Accept: "application/rss+xml, application/xml, text/xml, */*",
+        },
+      },
+      FIRECRAWL_TIMEOUT_MS,
+    );
+    if (!res.ok) return [];
+    const xml = await res.text();
+    // Keep only security-relevant headlines so the extractor isn't flooded.
+    return parseRssItems(xml, 25).filter((block) => INCIDENT_KEYWORDS.test(block));
+  } catch {
+    return [];
+  }
+}
+
+async function freeNewsSearch(): Promise<{ blocks: string[]; diag: Record<string, number> }> {
+  const signals = getSignalsForThisRun();
+  const [googleGroups, gdeltGroup, outletGroups] = await Promise.all([
+    Promise.all(signals.map((q) => googleNewsRss(q).catch(() => []))),
+    gdeltSearch(signals[0] ?? "Nigeria security incident").catch(() => []),
+    Promise.all(OUTLET_FEEDS.map((u) => outletFeed(u))),
+  ]);
+  const google = googleGroups.flat();
+  const outlets = outletGroups.flat();
+  return {
+    blocks: [...google, ...gdeltGroup, ...outlets],
+    diag: {
+      google_news: google.length,
+      gdelt: gdeltGroup.length,
+      outlet_rss: outlets.length,
+    },
+  };
+}
+
 
 function mergeBlocks(groups: string[][]): string {
   const seen = new Set<string>();
@@ -431,7 +495,7 @@ export const Route = createFileRoute("/api/public/hooks/ingest-incidents")({
           // Free key-less sources always run; Firecrawl adds richer full-text
           // when it has credits, but a failure there no longer stops ingestion.
           let firecrawlNote: string | null = null;
-          const [freeBlocks, firecrawlText] = await Promise.all([
+          const [free, firecrawlText] = await Promise.all([
             freeNewsSearch(),
             firecrawlKey
               ? firecrawlSearchNews(firecrawlKey).catch((err: unknown) => {
@@ -442,16 +506,18 @@ export const Route = createFileRoute("/api/public/hooks/ingest-incidents")({
           ]);
           const newsText = mergeBlocks([
             firecrawlText ? firecrawlText.split("\n\n---\n\n") : [],
-            freeBlocks,
+            free.blocks,
           ]);
           if (!newsText.trim()) {
             return Response.json({
               ok: true,
               inserted: 0,
               note: "No news results",
+              sources: free.diag,
               firecrawl_error: firecrawlNote,
             });
           }
+
 
 
           const extracted = await extractIncidents(lovableKey, newsText);
