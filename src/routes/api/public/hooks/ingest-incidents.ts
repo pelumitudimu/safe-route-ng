@@ -198,6 +198,113 @@ async function firecrawlSearchNews(apiKey: string): Promise<string> {
   return blocks.join("\n\n---\n\n");
 }
 
+// ---------- Free, key-less news sources ----------
+// Google News RSS and GDELT both work without an API key, so ingestion keeps
+// running even when the paid provider is out of credits.
+
+function stripHtml(value: string): string {
+  return value
+    .replace(/<!\[CDATA\[|\]\]>/g, "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function googleNewsRss(query: string): Promise<string[]> {
+  try {
+    const url = `https://news.google.com/rss/search?q=${encodeURIComponent(
+      `${query} when:2d`,
+    )}&hl=en-NG&gl=NG&ceid=NG:en`;
+    const res = await fetchWithTimeout(
+      url,
+      { headers: { "User-Agent": "SafeRouteNigeria/1.0" } },
+      FIRECRAWL_TIMEOUT_MS,
+    );
+    if (!res.ok) return [];
+    const xml = await res.text();
+    const items = xml.split("<item>").slice(1, 7);
+    return items
+      .map((item) => {
+        const title = stripHtml(item.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? "");
+        const link = stripHtml(item.match(/<link>([\s\S]*?)<\/link>/)?.[1] ?? "");
+        const desc = stripHtml(
+          item.match(/<description>([\s\S]*?)<\/description>/)?.[1] ?? "",
+        ).slice(0, 1200);
+        if (!title || !link) return "";
+        return `SOURCE_URL: ${link}\nTITLE: ${title}\nCONTENT: ${desc}`;
+      })
+      .filter(Boolean);
+  } catch (err) {
+    console.error(
+      "[ingest-incidents] Google News RSS failed:",
+      err instanceof Error ? err.message : err,
+    );
+    return [];
+  }
+}
+
+async function gdeltSearch(query: string): Promise<string[]> {
+  try {
+    const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${encodeURIComponent(
+      `${query} sourcecountry:NI`,
+    )}&mode=ArtList&maxrecords=10&format=json&timespan=2d&sort=datedesc`;
+    const res = await fetchWithTimeout(
+      url,
+      { headers: { "User-Agent": "SafeRouteNigeria/1.0" } },
+      FIRECRAWL_TIMEOUT_MS,
+    );
+    if (!res.ok) return [];
+    const text = await res.text();
+    if (!text.trim().startsWith("{")) return []; // rate-limit / plain-text notice
+    const data = JSON.parse(text) as {
+      articles?: Array<{ url?: string; title?: string; domain?: string; seendate?: string }>;
+    };
+    return (data.articles ?? [])
+      .filter((a) => a.url && a.title)
+      .map(
+        (a) =>
+          `SOURCE_URL: ${a.url}\nTITLE: ${a.title}\nCONTENT: Reported by ${a.domain ?? "news source"}${
+            a.seendate ? ` on ${a.seendate}` : ""
+          }.`,
+      );
+  } catch (err) {
+    console.error(
+      "[ingest-incidents] GDELT failed:",
+      err instanceof Error ? err.message : err,
+    );
+    return [];
+  }
+}
+
+async function freeNewsSearch(): Promise<string[]> {
+  const signals = getSignalsForThisRun();
+  const settled = await Promise.allSettled([
+    ...signals.map((q) => googleNewsRss(q)),
+    gdeltSearch(signals[0] ?? "Nigeria security incident"),
+  ]);
+  return settled.flatMap((o) => (o.status === "fulfilled" ? o.value : []));
+}
+
+function mergeBlocks(groups: string[][]): string {
+  const seen = new Set<string>();
+  const blocks: string[] = [];
+  for (const group of groups) {
+    for (const block of group) {
+      const url = block.match(/^SOURCE_URL:\s*(.+)$/m)?.[1]?.trim();
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+      blocks.push(block);
+    }
+  }
+  return blocks.join("\n\n---\n\n");
+}
+
 async function extractIncidents(
   lovableKey: string,
   newsText: string,
