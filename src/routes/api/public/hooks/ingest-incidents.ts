@@ -529,12 +529,23 @@ export const Route = createFileRoute("/api/public/hooks/ingest-incidents")({
               firecrawl_error: firecrawlNote,
             });
           }
-
-
-
-          const extracted = await extractIncidents(lovableKey, newsText);
+          // AI extraction first; when the AI gateway is unavailable (e.g. out
+          // of credits) fall back to keyword-based parsing so the feed never
+          // stops entirely.
+          let extracted: ExtractedIncident[];
+          let mode = "ai";
+          try {
+            extracted = await extractIncidents(lovableKey, newsText);
+          } catch (err) {
+            console.error(
+              "[ingest-incidents] AI extraction unavailable, using heuristic fallback:",
+              err instanceof Error ? err.message : err,
+            );
+            extracted = extractIncidentsHeuristic(newsText);
+            mode = "heuristic";
+          }
           if (!extracted.length) {
-            return Response.json({ ok: true, inserted: 0, note: "Nothing to extract" });
+            return Response.json({ ok: true, inserted: 0, note: "Nothing to extract", mode });
           }
 
           const { supabaseAdmin } = await import(
