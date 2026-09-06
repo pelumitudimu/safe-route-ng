@@ -19,9 +19,14 @@ export function NewsRefreshButton({ className }: { className?: string }) {
     setBusy(true);
     toast.info("Fetching the latest security news…");
     try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const res = await fetch("/api/public/hooks/ingest-incidents", {
         method: "POST",
-        headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+        headers: session?.access_token
+          ? { authorization: `Bearer ${session.access_token}` }
+          : { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
