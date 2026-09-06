@@ -121,13 +121,16 @@ function AuthPage() {
   };
 
   const googleSignIn = async () => {
+    // Must return to a public, same-origin URL — a protected page bounces
+    // back to sign-in before the session is stored.
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/dashboard",
+      redirect_uri: window.location.origin + "/auth",
     });
     if (result.error) return toast.error("Google sign-in failed. Please try again.");
     if (result.redirected) return;
     navigate({ to: "/dashboard" });
   };
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
