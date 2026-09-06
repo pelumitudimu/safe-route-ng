@@ -4,6 +4,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { IncidentCard } from "@/components/incidents/IncidentCard";
 import { LiveIndicator } from "@/components/LiveIndicator";
+import { NewsRefreshButton } from "@/components/NewsRefreshButton";
 import { ReaderModeToggle } from "@/components/ReaderModeToggle";
 import { IncidentReader } from "@/components/incidents/IncidentReader";
 import { useReaderMode } from "@/hooks/use-reader-mode";
@@ -68,6 +69,7 @@ function AlertsPage() {
       title="Alerts & Verification"
       action={
         <>
+          <NewsRefreshButton />
           <ReaderModeToggle reader={reader} onToggle={toggleReader} />
           <LiveIndicator className="hidden sm:inline-flex" />
         </>

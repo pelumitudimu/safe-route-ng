@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RiskPill } from "@/components/safety-badges";
 import { LiveIndicator } from "@/components/LiveIndicator";
+import { NewsRefreshButton } from "@/components/NewsRefreshButton";
 import { IncidentCard } from "@/components/incidents/IncidentCard";
 import { useLiveIncidents } from "@/hooks/use-live-incidents";
 import { useAuth } from "@/hooks/use-auth";
@@ -34,7 +35,10 @@ function Dashboard() {
   const verified = incidents.filter((i) => i.status === "verified");
 
   return (
-    <AppLayout title={`Hi, ${profile?.display_name?.split(" ")[0] || "there"} 👋`}>
+    <AppLayout
+      title={`Hi, ${profile?.display_name?.split(" ")[0] || "there"} 👋`}
+      action={<NewsRefreshButton />}
+    >
       <div className="grid gap-4 animate-float-up">
         {/* Risk hero */}
         <Card className="border-border bg-card p-6 shadow-card">
