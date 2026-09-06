@@ -664,6 +664,7 @@ export const Route = createFileRoute("/api/public/hooks/ingest-incidents")({
             inserted,
             candidates: extracted.length,
             skipped_no_geo: skipped.length,
+            mode,
           });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
