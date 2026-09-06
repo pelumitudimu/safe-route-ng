@@ -475,7 +475,19 @@ export const Route = createFileRoute("/api/public/hooks/ingest-incidents")({
         const provided =
           request.headers.get("apikey") ||
           request.headers.get("authorization")?.replace("Bearer ", "");
-        if (!expected || provided !== expected) {
+        let authorized = !!expected && provided === expected;
+
+        // In-app "Refresh news" button: any signed-in user may trigger an
+        // ingest (results are deduped, so this is safe to allow).
+        if (!authorized && provided) {
+          const { supabaseAdmin } = await import(
+            "@/integrations/supabase/client.server"
+          );
+          const { data, error } = await supabaseAdmin.auth.getUser(provided);
+          authorized = !error && !!data.user;
+        }
+
+        if (!authorized) {
           return new Response(JSON.stringify({ error: "Unauthorized" }), {
             status: 401,
             headers: { "Content-Type": "application/json" },
