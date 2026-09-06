@@ -430,6 +430,78 @@ Respond as JSON: { "incidents": [ ... ] }`;
   );
 }
 
+// ---------- Heuristic fallback (no AI needed) ----------
+// Parses the same SOURCE_URL/TITLE/CONTENT blocks with keyword rules so
+// ingestion keeps working when the AI gateway is unavailable.
+
+const NIGERIAN_STATES = [
+  "Abia","Adamawa","Akwa Ibom","Anambra","Bauchi","Bayelsa","Benue","Borno",
+  "Cross River","Delta","Ebonyi","Edo","Ekiti","Enugu","Gombe","Imo","Jigawa",
+  "Kaduna","Kano","Katsina","Kebbi","Kogi","Kwara","Lagos","Nasarawa","Niger",
+  "Ogun","Ondo","Osun","Oyo","Plateau","Rivers","Sokoto","Taraba","Yobe",
+  "Zamfara","FCT","Abuja",
+];
+
+const SECURITY_KEYWORDS = [
+  "kidnap","abduct","bandit","gunmen","robber","robbery","armed","attack",
+  "kill","murder","shoot","shot","assault","theft","steal","stole","raid",
+  "bomb","explosion","fire","arson","protest","riot","clash","fraud","scam",
+  "arrest","terror","insurgent","cult","rape","violence","crime",
+];
+
+const CATEGORY_RULES: Array<[RegExp, IncidentCategory]> = [
+  [/kidnap|abduct/i, "kidnapping"],
+  [/robber|armed rob|raid/i, "robbery"],
+  [/bomb|explosion|terror|insurgent|bandit|gunmen|massacre/i, "assault"],
+  [/kill|murder|shoot|shot dead|cult|lynch/i, "assault"],
+  [/rape|harass/i, "harassment"],
+  [/theft|steal|stole|burgla/i, "theft"],
+  [/crash|accident|collision/i, "accident"],
+  [/protest|riot|demonstrat/i, "protest"],
+  [/fire|arson|inferno|blaze/i, "fire"],
+  [/fraud|scam|ponzi|cybercrime/i, "fraud"],
+];
+
+function heuristicCategory(text: string): IncidentCategory {
+  for (const [re, cat] of CATEGORY_RULES) if (re.test(text)) return cat;
+  return "other";
+}
+
+function heuristicSeverity(text: string): IncidentSeverity {
+  const deaths = text.match(/(\d+)\s+(?:people\s+)?(?:killed|dead|feared dead)/i);
+  if (deaths && parseInt(deaths[1], 10) >= 5) return "critical";
+  if (/killed|dead|massacre|bomb|abduct|kidnap|gunmen|bandit/i.test(text)) return "high";
+  if (/arrest|injur|attack|rob|raid|clash/i.test(text)) return "medium";
+  return "low";
+}
+
+function extractIncidentsHeuristic(newsText: string): ExtractedIncident[] {
+  const out: ExtractedIncident[] = [];
+  for (const block of newsText.split("\n\n---\n\n")) {
+    if (out.length >= 12) break;
+    const url = block.match(/^SOURCE_URL:\s*(.+)$/m)?.[1]?.trim();
+    const title = block.match(/^TITLE:\s*(.+)$/m)?.[1]?.trim();
+    const content = block.match(/^CONTENT:\s*([\s\S]+)$/m)?.[1]?.trim() ?? "";
+    if (!url || !title) continue;
+    const haystack = `${title} ${content.slice(0, 600)}`;
+    // Must look like a security story and name a Nigerian state/city.
+    if (!SECURITY_KEYWORDS.some((k) => haystack.toLowerCase().includes(k))) continue;
+    const state = NIGERIAN_STATES.find((s) =>
+      new RegExp(`\\b${s}\\b`, "i").test(haystack),
+    );
+    if (!state) continue;
+    out.push({
+      title: title.slice(0, 90),
+      description: content.slice(0, 280) || title,
+      category: heuristicCategory(haystack),
+      severity: heuristicSeverity(haystack),
+      location: state === "Abuja" ? "Abuja, FCT" : `${state}, Nigeria`,
+      source_url: url,
+    });
+  }
+  return out;
+}
+
 async function geocode(
   place: string,
 ): Promise<{ lat: number; lon: number; address: string } | null> {
