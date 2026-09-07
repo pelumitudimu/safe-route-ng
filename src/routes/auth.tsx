@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/auth")({
@@ -38,10 +37,9 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    // Prefill the last used email so returning users only type a password.
     const saved = typeof window !== "undefined" ? localStorage.getItem("sr:last-email") : null;
     if (saved) setEmail(saved);
 
@@ -58,66 +56,57 @@ function AuthPage() {
     }
   };
 
-  const signIn = async () => {
+  const done = (value: string, message: string) => {
+    rememberEmail(value);
+    toast.success(message);
+    navigate({ to: "/dashboard" });
+  };
+
+  // One button: sign in if the account exists, otherwise create it.
+  const continueWithEmail = async () => {
     const e = emailSchema.safeParse(email);
     const p = passwordSchema.safeParse(password);
     if (!e.success) return toast.error(e.error.issues[0].message);
     if (!p.success) return toast.error(p.error.issues[0].message);
+
     setLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({
       email: e.data,
       password: p.data,
     });
-    setLoading(false);
-    if (error) return toast.error(friendlyError(error.message));
-    if (!data.session) return toast.error("Sign-in did not complete. Please try again.");
-    rememberEmail(e.data);
-    toast.success("Welcome back!");
-    navigate({ to: "/dashboard" });
-  };
 
-  const signUp = async () => {
-    const e = emailSchema.safeParse(email);
-    const p = passwordSchema.safeParse(password);
-    if (!e.success) return toast.error(e.error.issues[0].message);
-    if (!p.success) return toast.error(p.error.issues[0].message);
-    setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
+    if (!error && data.session) {
+      setLoading(false);
+      return done(e.data, "Welcome back!");
+    }
+
+    const msg = (error?.message ?? "").toLowerCase();
+    if (!msg.includes("invalid login credentials")) {
+      setLoading(false);
+      return toast.error(friendlyError(error?.message ?? "Sign-in did not complete."));
+    }
+
+    // No account with that password — try creating one.
+    const { data: created, error: signUpError } = await supabase.auth.signUp({
       email: e.data,
       password: p.data,
       options: {
         emailRedirectTo: window.location.origin + "/dashboard",
-        data: { display_name: displayName.trim() || e.data.split("@")[0] },
+        data: { display_name: e.data.split("@")[0] },
       },
     });
-
-    // Existing account? Fall straight through to sign-in instead of erroring out.
-    if (error && error.message.toLowerCase().includes("already registered")) {
-      const { data: signed, error: signInError } = await supabase.auth.signInWithPassword({
-        email: e.data,
-        password: p.data,
-      });
-      setLoading(false);
-      if (signInError) return toast.error(friendlyError(signInError.message));
-      if (signed.session) {
-        rememberEmail(e.data);
-        toast.success("Welcome back!");
-        navigate({ to: "/dashboard" });
-      }
-      return;
-    }
-
     setLoading(false);
-    if (error) return toast.error(friendlyError(error.message));
-    rememberEmail(e.data);
-    // When email confirmation is disabled, sign-up returns a live session and
-    // the browser's password manager can save the new credentials immediately.
-    if (data.session) {
-      toast.success("Account created! You're signed in.");
-      navigate({ to: "/dashboard" });
-      return;
+
+    if (signUpError) {
+      if (signUpError.message.toLowerCase().includes("already registered")) {
+        return toast.error("That email already has an account, but the password is wrong. Use “Forgot password?”.");
+      }
+      return toast.error(friendlyError(signUpError.message));
     }
-    toast.success("Account created! Check your email to confirm, then sign in.");
+
+    if (created.session) return done(e.data, "Account created — you're signed in!");
+    rememberEmail(e.data);
+    toast.success("Account created! Check your email to confirm, then come back here.");
   };
 
   const googleSignIn = async () => {
@@ -131,7 +120,6 @@ function AuthPage() {
     navigate({ to: "/dashboard" });
   };
 
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
@@ -139,101 +127,69 @@ function AuthPage() {
           <Logo />
         </Link>
         <Card className="mt-6 border-border bg-card p-6 shadow-card">
-          <Tabs defaultValue="signin">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup">Sign up</TabsTrigger>
-            </TabsList>
+          <h1 className="text-center text-lg font-semibold">Sign in or create your account</h1>
+          <p className="mt-1 text-center text-xs text-muted-foreground">
+            Enter your email and a password — we'll sign you in, or set you up if you're new.
+          </p>
 
-            <TabsContent value="signin" className="mt-5">
-              <form
-                className="space-y-4"
-                onSubmit={(ev) => {
-                  ev.preventDefault();
-                  if (!loading) signIn();
-                }}
-              >
-                <Field
-                  id="signin-email"
-                  name="email"
-                  label="Email"
-                  value={email}
-                  onChange={setEmail}
-                  type="email"
-                  autoComplete="username"
-                  placeholder="you@example.com"
-                />
-                <Field
-                  id="signin-password"
-                  name="password"
-                  label="Password"
-                  value={password}
-                  onChange={setPassword}
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                />
-                <div className="text-right">
-                  <Link to="/reset-password" className="text-xs text-primary hover:underline">
-                    Forgot password?
-                  </Link>
-                </div>
-                <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground">
-                  {loading ? "Signing in..." : "Sign in"}
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup" className="mt-5">
-              <form
-                className="space-y-4"
-                onSubmit={(ev) => {
-                  ev.preventDefault();
-                  if (!loading) signUp();
-                }}
-              >
-                <Field
-                  id="signup-name"
-                  name="name"
-                  label="Display name"
-                  value={displayName}
-                  onChange={setDisplayName}
-                  autoComplete="name"
-                  placeholder="Your name"
-                />
-                <Field
-                  id="signup-email"
-                  name="email"
-                  label="Email"
-                  value={email}
-                  onChange={setEmail}
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                />
-                <Field
-                  id="signup-password"
-                  name="new-password"
-                  label="Password"
-                  value={password}
-                  onChange={setPassword}
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="At least 6 characters"
-                />
-                <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground">
-                  {loading ? "Creating..." : "Create account"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-
-          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
-          </div>
-          <Button onClick={googleSignIn} variant="outline" className="w-full">
+          <Button onClick={googleSignIn} variant="outline" className="mt-5 w-full">
             Continue with Google
           </Button>
+
+          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="h-px flex-1 bg-border" /> or use email{" "}
+            <span className="h-px flex-1 bg-border" />
+          </div>
+
+          <form
+            className="space-y-4"
+            onSubmit={(ev) => {
+              ev.preventDefault();
+              if (!loading) continueWithEmail();
+            }}
+          >
+            <Field
+              id="auth-email"
+              name="email"
+              label="Email"
+              value={email}
+              onChange={setEmail}
+              type="email"
+              autoComplete="username"
+              placeholder="you@example.com"
+            />
+            <div className="space-y-1.5">
+              <Field
+                id="auth-password"
+                name="password"
+                label="Password"
+                value={password}
+                onChange={setPassword}
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                placeholder="At least 6 characters"
+              />
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="text-xs text-muted-foreground hover:underline"
+                >
+                  {showPassword ? "Hide password" : "Show password"}
+                </button>
+                <Link to="/reset-password" className="text-xs text-primary hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+            </div>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-primary text-primary-foreground"
+            >
+              {loading ? "Please wait..." : "Continue"}
+            </Button>
+          </form>
         </Card>
         <p className="mt-4 text-center text-xs text-muted-foreground">
           By continuing you agree to keep our community safe and report responsibly.

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { PhoneCall } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { IncidentCard } from "@/components/incidents/IncidentCard";
@@ -69,6 +71,12 @@ function AlertsPage() {
       title="Alerts & Verification"
       action={
         <>
+          <Link to="/emergency">
+            <Button size="sm" variant="outline" className="gap-1.5">
+              <PhoneCall className="h-4 w-4" />
+              <span className="hidden sm:inline">Emergency numbers</span>
+            </Button>
+          </Link>
           <NewsRefreshButton />
           <ReaderModeToggle reader={reader} onToggle={toggleReader} />
           <LiveIndicator className="hidden sm:inline-flex" />

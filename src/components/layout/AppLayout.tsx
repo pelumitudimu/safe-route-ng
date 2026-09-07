@@ -12,6 +12,7 @@ import {
   Bot,
   BarChart3,
   History as HistoryIcon,
+  PhoneCall,
   LogOut,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
@@ -39,6 +40,7 @@ const NAV = [
   { to: "/history", label: "Safety History", icon: HistoryIcon },
   { to: "/statistics", label: "Statistics", icon: BarChart3 },
   { to: "/circle", label: "Family & Friends", icon: Users },
+  { to: "/emergency", label: "Emergency Numbers", icon: PhoneCall },
   { to: "/alerts", label: "Alerts", icon: Bell },
   { to: "/profile", label: "Profile", icon: User },
 ] as const;

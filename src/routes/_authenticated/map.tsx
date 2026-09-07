@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Flame, Layers, LocateFixed } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Flame, Layers, LocateFixed, PhoneCall } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { LiveIndicator } from "@/components/LiveIndicator";
@@ -38,6 +38,12 @@ function MapPage() {
       fullBleed
       action={
         <div className="flex items-center gap-2">
+          <Link to="/emergency">
+            <Button size="sm" variant="outline" className="gap-1.5">
+              <PhoneCall className="h-4 w-4" />
+              <span className="hidden sm:inline">Emergency numbers</span>
+            </Button>
+          </Link>
           <LiveIndicator className="hidden sm:inline-flex" />
           <Button
             size="sm"
