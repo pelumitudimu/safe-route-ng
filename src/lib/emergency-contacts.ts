@@ -17,7 +17,7 @@ export interface CityContacts {
 export const NATIONAL_CONTACTS: ContactEntry[] = [
   { name: "National Emergency Number (all emergencies)", phones: ["112"], type: "emergency" },
   { name: "Nigeria Police Force — Control Room", phones: ["0803 123 0430", "0805 700 0001"], type: "police" },
-  { name: "NEMA (National Emergency Management Agency)", phones: ["0800 races 2872", "0803 123 0430"], type: "emergency", note: "Disaster and mass-casualty response" },
+  { name: "NEMA (National Emergency Management Agency)", phones: ["0800 2255 6362", "0803 123 0430"], type: "emergency", note: "Disaster and mass-casualty response" },
   { name: "Federal Road Safety Corps (FRSC)", phones: ["122"], type: "emergency", note: "Road crashes and highway help" },
   { name: "NDLEA (drug-related crime)", phones: ["0800 1020 3040"], type: "other" },
   { name: "DSS / SSS", phones: ["0909 900 0001"], type: "other" },
