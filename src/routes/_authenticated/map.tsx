@@ -38,6 +38,12 @@ function MapPage() {
       fullBleed
       action={
         <div className="flex items-center gap-2">
+          <Link to="/emergency">
+            <Button size="sm" variant="outline" className="gap-1.5">
+              <PhoneCall className="h-4 w-4" />
+              <span className="hidden sm:inline">Emergency numbers</span>
+            </Button>
+          </Link>
           <LiveIndicator className="hidden sm:inline-flex" />
           <Button
             size="sm"
